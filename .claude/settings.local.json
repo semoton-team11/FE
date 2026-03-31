@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(find /Users/tom/Desktop/projects/semotone-fe/src -name *.tsx -newer /Users/tom/Desktop/projects/semotone-fe/src/components/Navbar.tsx)",
+      "Bash(find /Users/tom/Desktop/projects/semotone-fe/src/components -name *.tsx)",
+      "Bash(ls .env*)",
+      "Bash(find /Users/tom/Desktop/projects/semotone-fe/src -name *senior* -type f)",
+      "Bash(wc -l /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/seniors/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/seniors/[id]/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/[dept]/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/[dept]/[field]/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/messages/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/mypage/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(auth\\\\\\)/login/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(auth\\\\\\)/signup/page.tsx /Users/tom/Desktop/projects/semotone-fe/src/components/Navbar.tsx /Users/tom/Desktop/projects/semotone-fe/src/services/seniors.ts /Users/tom/Desktop/projects/semotone-fe/src/services/roadmap.ts /Users/tom/Desktop/projects/semotone-fe/src/services/connections.ts)",
+      "Bash(mkdir -p /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/seniors/[id]/_lib /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/seniors/[id]/_components)",
+      "Bash(mkdir -p /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/[dept]/_lib /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/[dept]/_components)",
+      "Bash(mkdir -p /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/[dept]/[field]/_lib /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/[dept]/[field]/_components)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(kill 27041)"
+    ]
+  }
+}
