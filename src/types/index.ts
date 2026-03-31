@@ -41,8 +41,57 @@ export type CurriculumStatus = {
   basic: { total: number; completed: number };    // 전공기초
 };
 
+/** 학과에서 제공하는 과목 카탈로그 단위 */
+export type CatalogCourse = {
+  id: string;
+  name: string;
+  credits: number;
+  code: string;          // 과목 코드 (예: "FD101")
+  type: CourseType;
+  departmentId: string;
+};
+
+/** 학과별 졸업 요건 */
+export type CurriculumRequirement = {
+  departmentId: string;
+  required: number;   // 전공필수 총 이수 학점
+  elective: number;   // 전공선택 총 이수 학점
+  basic: number;      // 전공기초 총 이수 학점
+  liberal: number;    // 교양 총 이수 학점
+};
+
 // ============================================================
-// 커리어 로드맵
+// 커리어 로드맵 — 과목 구조
+// ============================================================
+
+export type RoadmapCourseType = "기초" | "필수" | "선택";
+
+/** 백엔드에서 받는 로드맵 과목 단위 */
+export type RoadmapCourse = {
+  id: string;
+  name: string;       // 한국어 과목명
+  nameEn: string;     // 영어 부제
+  type: RoadmapCourseType;
+  year: 1 | 2 | 3 | 4;
+  semester: 1 | 2;
+  dept: string;       // 학과명 (ex: "컴퓨터공학과")
+  field: string;      // 분야명 (ex: "프론트엔드")
+};
+
+/** UI에서 사용하는 학기 단위 */
+export type TrackSemester = {
+  sem: string;
+  courses: { name: string; sub: string; type: RoadmapCourseType }[];
+};
+
+/** UI에서 사용하는 학년 단위 */
+export type TrackYear = {
+  year: string;
+  semesters: TrackSemester[];
+};
+
+// ============================================================
+// 커리어 로드맵 — 직무
 // ============================================================
 
 export type Job = {
@@ -60,17 +109,18 @@ export type Job = {
 export type Senior = {
   id: string;
   name: string;
-  departmentId: string;
-  fieldId: string;          // 세부 분야
-  company: string;          // 현재 재직 중인 회사
+  departmentId: string;     // 첫 번째 전공 기준 (필터링용)
+  department: string;       // 카드 표시용 (예: "산업디자인학과, 경제학과")
+  graduationYear: number;
+  company: string;          // 재직 회사
   jobTitle: string;
-  skills: string[];         // 보유 스킬 태그
+  skills: string[];         // 전문 분야 태그
   profileImage: string | null;
-  bio: string;              // 한 줄 소개
-  tips: string;             // 후배들에게 남기는 팁
-  timetable: TimetableEntry[]; // 대학 시절 수강 시간표
-  isAvailable: boolean;     // 커피챗/멘토링 가능 여부
-  scheduledSession?: { datetime: string; title: string }; // 예정된 세션
+  bio: string;
+  tips: string;
+  timetable: TimetableEntry[];
+  isAvailable: boolean;
+  scheduledSession?: { datetime: string; title: string };
 };
 
 export type TimetableEntry = {

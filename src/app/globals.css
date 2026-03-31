@@ -64,7 +64,7 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
+  --background: #F6F6F6;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -130,6 +130,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* 회원가입/로그인 폼 placeholder 색상 */
+.auth-input::placeholder {
+  color: #E6BDBB99;
 }
 
 @layer base {
