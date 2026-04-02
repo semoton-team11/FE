@@ -158,11 +158,22 @@ export async function getCurriculumStatus(
 // DB 테이블 : catalog_courses WHERE department_id = ?
 // ──────────────────────────────────────────────────────────────
 export async function getCatalogCourses(): Promise<CatalogCourse[]> {
-  try {
-    return await apiRequest<CatalogCourse[]>(`/curriculum/courses`);
-  } catch {
-    return MOCK_CATALOG_COURSES;
+  const response = await apiRequest(`/curriculum/courses`); 
+  
+  const rawData = (response as any).data || response;
+
+  if (!Array.isArray(rawData)) {
+    return [];
   }
+
+  return rawData.map((course: any) => ({
+    id: course.course_id,         // course_id -> id
+    name: course.course_name,     // course_name -> name
+    credits: course.credits,      // credits -> credits
+    code: course.course_id,
+    type: course.course_type,     // course_type -> type
+    department: course.dept_name
+  }));
 }
 
 // ──────────────────────────────────────────────────────────────

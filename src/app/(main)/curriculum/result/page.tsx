@@ -24,8 +24,8 @@ export default function CurriculumResultPage() {
   useEffect(() => {
     getCurrentUser().then(async (user) => {
       if (!user) return;
-      
       setUserId(user.id);
+
       const [courses, req, savedChecked, calcStatus] = await Promise.all([
         getCatalogCourses(),
         getCurriculumRequirement(),
@@ -35,24 +35,24 @@ export default function CurriculumResultPage() {
       setCatalog(courses);
       setRequirement(req);
       setChecked(savedChecked);
+      setStatus(calcStatus);
     });
   }, []);
 
-  if (!requirement) return null;
+  if (!status) return null;
 
   // ── 학점 계산 ─────────────────────────────────────────────────
   const reqByType: Record<CategoryType, number> = {
-    "전공기초": requirement.basic,
-    "전공필수": requirement.required,
-    "전공선택": requirement.elective,
+    "전공기초": status.basic.total,
+    "전공필수": status.required.total,
+    "전공선택": status.elective.total,
   };
 
-  const completedByType = CATEGORY_ORDER.reduce((acc, type) => {
-    acc[type] = catalog
-      .filter(c => c.type === type && checked.has(c.id))
-      .reduce((s, c) => s + c.credits, 0);
-    return acc;
-  }, {} as Record<CategoryType, number>);
+  const completedByType: Record<CategoryType, number> = {
+    "전공기초": status.basic.completed,
+    "전공필수": status.required.completed,
+    "전공선택": status.elective.completed,
+  };
 
   const plannedByType = CATEGORY_ORDER.reduce((acc, type) => {
     acc[type] = catalog
@@ -61,9 +61,17 @@ export default function CurriculumResultPage() {
     return acc;
   }, {} as Record<CategoryType, number>);
 
-  const totalRequired = Object.values(reqByType).reduce((a, b) => a + b, 0);
-  const totalCompleted = Object.values(completedByType).reduce((a, b) => a + b, 0);
+  let total = 120
+  if (requirement) {
+    total = requirement?.basic+ requirement?.elective + requirement?.required
+  }
+
+  const totalRequired = total; // 또는 status.total_required (서비스 함수에서 추가해줬을 경우)
+  const totalCompleted = status.basic.completed + status.required.completed + status.elective.completed;
   const remaining = totalRequired - totalCompleted;
+  // const totalRequired = Object.values(reqByType).reduce((a, b) => a + b, 0);
+  // const totalCompleted = Object.values(completedByType).reduce((a, b) => a + b, 0);
+  // const remaining = totalRequired - totalCompleted;
 
   // ── 핸들러 ───────────────────────────────────────────────────
   function togglePlanned(id: string) {
