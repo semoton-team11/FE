@@ -224,84 +224,56 @@ export async function getCheckedCourses(userId: string): Promise<Set<string>> {
 // ──────────────────────────────────────────────────────────────
 // saveCheckedCourses  — 이수 체크 과목 ID 목록 저장
 // DB 테이블 : user_courses (delete + bulk insert)
-// 현재     : localStorage
 // ──────────────────────────────────────────────────────────────
 export async function saveCheckedCourses(
   userId: string,
   checkedIds: string[]
 ): Promise<void> {
-//   try {
-//     const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
-//     const checkedSet = new Set(checkedIds);
-//     const currentMap = new Map(current.map((c) => [c.course_id, c]));
+  try {
+    const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
+    const currentCourseIds = new Set(current.map((c) => c.course_id));
+    const checkedSet = new Set(checkedIds);
 
-//     // 새로 체크된 과목 → POST
-//     const toAdd = checkedIds.filter((id) => !currentMap.has(id));
+    // 1. 새로 체크된 과목 → POST (DB에 없는 것만 추가)
+    const toAdd = checkedIds.filter((id) => !currentCourseIds.has(id));
 
-//     // 체크 해제된 과목 → DELETE
-//     const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
+    // 2. 체크 해제된 과목 → DELETE (DB에는 있지만 체크 해제된 것)
+    const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
 
-//     await Promise.all([
-//       ...toAdd.map((courseId) =>
-//         apiRequest(`/curriculum/${userId}`, {
-//           method: "POST",
-//           body: JSON.stringify({
-//             course_id: courseId,
-//             semester: "",
-//             grade: null,
-//             completed: true,  // 항상 true 고정
-//           }),
-//         })
-//       ),
-//       ...toDelete.map((c) =>
-//         apiRequest(`/curriculum/${userId}/${c.id}`, {
-//           method: "DELETE",
-//         })
-//       ),
-//     ]);
-//   } catch {
-//     // API 미연결 시 localStorage에 저장 (디자인 리뷰 모드)
-//     if (typeof window !== "undefined") {
-//       localStorage.setItem(`checked_courses_${userId}`, JSON.stringify(checkedIds));
-//       localStorage.setItem(`last_planned_${userId}`, JSON.stringify(checkedIds));
-//     }
-//   }
-// }
+    await Promise.all([
+      ...toAdd.map((courseId) =>
+        apiRequest(`/curriculum/${userId}`, {
+          method: "POST",
+          body: JSON.stringify({
+            course_id: courseId,
+            semester: "2024-1", // 기본 학기 설정
+            grade: "P",        // 기본 성적 설정
+            completed: true,
+          }),
+        })
+      ),
+      ...toDelete.map((c) =>
+        apiRequest(`/curriculum/${userId}/${c.id}`, {
+          method: "DELETE",
+        })
+      ),
+    ]);
+  } catch (error) {
+    console.error("저장 중 에러 발생, 로컬 스토리지를 사용합니다.", error);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(`checked_courses_${userId}`, JSON.stringify(checkedIds));
+      localStorage.setItem(`last_planned_${userId}`, JSON.stringify(checkedIds));
+    }
+  }
+}
 
-// // ──────────────────────────────────────────────────────────────
-// // getPlannedCourses  — 홈화면 우선순위 과목 표시용
-// // localStorage 키: last_planned_{userId}
-// // ──────────────────────────────────────────────────────────────
-// export async function getPlannedCourses(userId: string): Promise<Set<string>> {
-//   if (typeof window === "undefined") return new Set();
-//   const raw = localStorage.getItem(`last_planned_${userId}`);
-//   return new Set(raw ? JSON.parse(raw) : []);
-  const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
-  const currentCourseIds = new Set(current.map((c) => c.course_id));
-  const checkedSet = new Set(checkedIds);
-
-  const toAdd = checkedIds.filter((id) => !currentCourseIds.has(id));
-
-  const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
-
-  await Promise.all([
-    ...toAdd.map((courseId) =>
-      apiRequest(`/curriculum/${userId}`, {
-        method: "POST",
-        body: JSON.stringify({
-          course_id: courseId,
-          semester: "2024-1",
-          grade: "P",
-          completed: true,
-        }),
-      })
-    ),
-    ...toDelete.map((c) =>
-      apiRequest(`/curriculum/${userId}/${c.id}`, {
-        method: "DELETE",
-      })
-    ),
-  ]);
+// ──────────────────────────────────────────────────────────────
+// getPlannedCourses  — 홈화면 우선순위 과목 표시용
+// ──────────────────────────────────────────────────────────────
+export async function getPlannedCourses(userId: string): Promise<Set<string>> {
+  if (typeof window === "undefined") return new Set();
+  const raw = localStorage.getItem(`last_planned_${userId}`);
+  return new Set(raw ? JSON.parse(raw) : []);
 }
 
 // ──────────────────────────────────────────────────────────────
