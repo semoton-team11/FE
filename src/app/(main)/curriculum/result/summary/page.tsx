@@ -22,7 +22,7 @@ export default function CurriculumSummaryPage() {
       setUserId(user.id);
       const [courses, req] = await Promise.all([
         getCatalogCourses(user.departmentId),
-        getCurriculumRequirement(user.departmentId),
+        getCurriculumRequirement(user.departmentId, user.id),
       ]);
       setCatalog(courses);
       setRequirement(req);

@@ -26,9 +26,10 @@ export default function CurriculumPage() {
   useEffect(() => {
     getCurrentUser().then(async (user) => {
       setUserId(user.id);
+      console.log("user:", user);
       const [courses, req, savedChecked] = await Promise.all([
         getCatalogCourses(user.departmentId),
-        getCurriculumRequirement(user.departmentId),
+        getCurriculumRequirement(user.departmentId, user.id),
         getCheckedCourses(user.id),
       ]);
       setCatalog(courses);

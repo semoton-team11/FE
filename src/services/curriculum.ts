@@ -32,142 +32,151 @@
 // ╚══════════════════════════════════════════════════════════════╝
 
 import type { CatalogCourse, Course, CurriculumRequirement, CurriculumStatus } from "@/types";
-import {
-  MOCK_USER,
-  MOCK_CURRICULUM_REQUIREMENTS,
-  MOCK_CATALOG_COURSES,
-  MOCK_CURRICULUM_REQUIREMENTS_BY_DEPT,
-} from "@/mock";
-// import { supabase } from "@/lib/supabase";
+import { apiRequest } from "@/lib/api";
+
+// 백엔드 응답 타입
+
+interface CourseInfo {
+  course_name: string;
+  course_type: string;
+  credits: number;
+  college_name: string;
+  dept_name: string;
+}
+
+interface CurriculumItem {
+  id: string;
+  course_id: string;
+  semester: string;
+  grade: string | null;
+  completed: boolean;
+  courses_master: CourseInfo;
+}
+
+interface CoursesResponse {
+  course_id: string;
+  college_name: string;
+  dept_name: string | null;
+  course_name: string;
+  course_type: string;
+  credits: number | null;
+}
+
+interface CategoryCredit {
+  category: string;
+  completed: number;
+  required: number;
+  remaining: number;
+}
+
+interface GraduationResponse {
+  categories: CategoryCredit[];
+  total_completed: number;
+  total_required: number;
+  total_remaining: number;
+}
 
 // ──────────────────────────────────────────────────────────────
 // getUserCourses  — 사용자가 이수한 과목 목록 반환
+// GET /curriculum/{user_id}
 // DB 테이블 : user_courses JOIN catalog_courses
 // ──────────────────────────────────────────────────────────────
 export async function getUserCourses(userId: string): Promise<Course[]> {
-
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data, error } = await supabase
-  //   .from("user_courses")
-  //   .select("catalog_courses(*)")
-  //   .eq("user_id", userId);
-  // if (error) throw error;
-  // return data?.map((row) => row.catalog_courses) ?? [];
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  void userId;
-  return MOCK_USER.courses;
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const data = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
+  return data.map((c) => ({
+    id: c.course_id,
+    name: c.courses_master.course_name,
+    credits: c.courses_master.credits,
+    type: c.courses_master.course_type as Course["type"],
+    semester: c.semester,
+    grade: c.grade,
+  }));
 }
+
+
 
 // ──────────────────────────────────────────────────────────────
 // getCurriculumStatus  — 졸업 요건 대비 이수 현황 계산
 // (getCheckedCourses + getCatalogCourses 기반 집계)
 // ──────────────────────────────────────────────────────────────
-export async function getCurriculumStatus(userId: string, departmentId: string): Promise<CurriculumStatus> {
-
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data, error } = await supabase
-  //   .from("user_courses")
-  //   .select("catalog_courses(credits, type)")
-  //   .eq("user_id", userId);
-  // if (error) throw error;
-  // const courses = data?.map((r) => r.catalog_courses) ?? [];
-  // const req = await getCurriculumRequirement(departmentId);
-  // const sum = (type: string) => courses.filter((c) => c.type === type).reduce((a, c) => a + c.credits, 0);
-  // return {
-  //   required: { total: req.required, completed: sum("전공필수") },
-  //   elective: { total: req.elective, completed: sum("전공선택") },
-  //   basic:    { total: req.basic,    completed: sum("전공기초") },
-  // };
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const [checkedIds, catalog, req] = await Promise.all([
-    getCheckedCourses(userId),
-    getCatalogCourses(departmentId),
-    getCurriculumRequirement(departmentId),
-  ]);
-
-  const checkedCourses = catalog.filter((c) => checkedIds.has(c.id));
-  const sum = (type: CatalogCourse["type"]) =>
-    checkedCourses.filter((c) => c.type === type).reduce((a, c) => a + c.credits, 0);
+export async function getCurriculumStatus(
+  userId: string,
+  departmentId: string
+): Promise<CurriculumStatus> {
+  const data = await apiRequest<GraduationResponse>(
+    `/curriculum/${userId}/graduation`
+  );
+  const get = (category: string) =>
+    data.categories.find((c) => c.category === category);
 
   return {
-    required: { total: req.required, completed: sum("전공필수") },
-    elective: { total: req.elective, completed: sum("전공선택") },
-    basic:    { total: req.basic,    completed: sum("전공기초") },
+    required: { total: get("전공필수")?.required ?? 0, completed: get("전공필수")?.completed ?? 0 },
+    elective: { total: get("전공선택")?.required ?? 0, completed: get("전공선택")?.completed ?? 0 },
+    basic:    { total: get("전공기초")?.required ?? 0, completed: get("전공기초")?.completed ?? 0 },
   };
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 }
+
+
 
 // ──────────────────────────────────────────────────────────────
 // getCatalogCourses  — 학과별 과목 카탈로그 반환
+// GET /courses/departments/{dept_name}
 // DB 테이블 : catalog_courses WHERE department_id = ?
 // ──────────────────────────────────────────────────────────────
 export async function getCatalogCourses(departmentId: string): Promise<CatalogCourse[]> {
-
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data, error } = await supabase
-  //   .from("catalog_courses")
-  //   .select("*")
-  //   .eq("department_id", departmentId);
-  // if (error) throw error;
-  // return data ?? [];
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  return MOCK_CATALOG_COURSES.filter((c) => c.departmentId === departmentId);
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const data = await apiRequest<CoursesResponse[]>(
+    `/courses/departments/${encodeURIComponent(departmentId)}`
+  );
+  return data.map((c) => ({
+    id: c.course_id,
+    name: c.course_name,
+    credits: c.credits ?? 0,
+    code: c.course_id,
+    type: c.course_type as CatalogCourse["type"],
+    departmentId: c.dept_name ?? departmentId,
+  }));
 }
+
+
 
 // ──────────────────────────────────────────────────────────────
 // getCurriculumRequirement  — 학과별 졸업 요건 반환
+// GET /curriculum/{user_id}/graduation
 // DB 테이블 : curriculum_requirements WHERE department_id = ?
 // ──────────────────────────────────────────────────────────────
 export async function getCurriculumRequirement(
-  departmentId: string
+  departmentId: string,
+  userId?: string
 ): Promise<CurriculumRequirement> {
+  if (!userId) throw new Error("로그인이 필요합니다.");
 
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data, error } = await supabase
-  //   .from("curriculum_requirements")
-  //   .select("*")
-  //   .eq("department_id", departmentId)
-  //   .single();
-  // if (error) throw error;
-  // return data;
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const data = await apiRequest<GraduationResponse>(
+    `/curriculum/${userId}/graduation`
+  );
+  const get = (category: string) =>
+    data.categories.find((c) => c.category === category);
 
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  const req = MOCK_CURRICULUM_REQUIREMENTS_BY_DEPT[departmentId]
-    ?? { required: 36, elective: 21, basic: 12, liberal: 12 };
-  return { departmentId, ...req };
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  return {
+    departmentId,
+    required: get("전공필수")?.required ?? 0,
+    elective: get("전공선택")?.required ?? 0,
+    basic:    get("전공기초")?.required ?? 0,
+    liberal:  0,
+  };
 }
+
 
 // ──────────────────────────────────────────────────────────────
 // getCheckedCourses  — 이수 체크된 과목 ID 목록 조회
+// GET /curriculum/{user_id}
 // DB 테이블 : user_courses WHERE user_id = ?
 // 현재     : localStorage  (키: checked_courses_{userId})
 // ──────────────────────────────────────────────────────────────
 export async function getCheckedCourses(userId: string): Promise<Set<string>> {
-
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data, error } = await supabase
-  //   .from("user_courses")
-  //   .select("catalog_course_id")
-  //   .eq("user_id", userId);
-  // if (error) throw error;
-  // return new Set(data?.map((r) => r.catalog_course_id) ?? []);
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  // ━━━ MOCK (현재 사용 중 — localStorage) ━━━━━━━━━━━━━━━━━━━━
-  if (typeof window === "undefined") return new Set();
-  const raw = localStorage.getItem(`checked_courses_${userId}`);
-  return new Set(raw ? JSON.parse(raw) : []);
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const data = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
+  return new Set(
+    data.filter((item) => item.completed).map((item) => item.course_id)
+  );
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -179,50 +188,60 @@ export async function saveCheckedCourses(
   userId: string,
   checkedIds: string[]
 ): Promise<void> {
+  const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
+  const checkedSet = new Set(checkedIds);
+  const currentMap = new Map(current.map((c) => [c.course_id, c]));
 
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // // 기존 이수 목록 전체 삭제 후 재삽입 (upsert 대신 단순 replace)
-  // const { error: deleteError } = await supabase
-  //   .from("user_courses")
-  //   .delete()
-  //   .eq("user_id", userId);
-  // if (deleteError) throw deleteError;
-  //
-  // if (checkedIds.length > 0) {
-  //   const { error: insertError } = await supabase
-  //     .from("user_courses")
-  //     .insert(checkedIds.map((id) => ({ user_id: userId, catalog_course_id: id })));
-  //   if (insertError) throw insertError;
-  // }
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 새로 체크된 과목 → POST
+  const toAdd = checkedIds.filter((id) => !currentMap.has(id));
 
-  // ━━━ MOCK (현재 사용 중 — localStorage) ━━━━━━━━━━━━━━━━━━━━
-  if (typeof window === "undefined") return;
-  localStorage.setItem(`checked_courses_${userId}`, JSON.stringify(checkedIds));
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // 체크 해제된 과목 → DELETE
+  const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
+
+  await Promise.all([
+    ...toAdd.map((courseId) =>
+      apiRequest(`/curriculum/${userId}`, {
+        method: "POST",
+        body: JSON.stringify({
+          course_id: courseId,
+          semester: "",
+          grade: null,
+          completed: true,  // 항상 true 고정
+        }),
+      })
+    ),
+    ...toDelete.map((c) =>
+      apiRequest(`/curriculum/${userId}/${c.id}`, {
+        method: "DELETE",
+      })
+    ),
+  ]);
 }
 
 // ──────────────────────────────────────────────────────────────
 // addCourse  — 수강 과목 추가 (임시 ID 부여)
+// POST /curriculum/{user_id}
 // DB 테이블 : user_courses
 // ──────────────────────────────────────────────────────────────
 export async function addCourse(
   userId: string,
   course: Omit<Course, "id">
 ): Promise<Course> {
-
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data, error } = await supabase
-  //   .from("user_courses")
-  //   .insert({ ...course, user_id: userId })
-  //   .select()
-  //   .single();
-  // if (error) throw error;
-  // return data;
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  void userId;
-  return { ...course, id: `temp-${Date.now()}` };
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const data = await apiRequest<CurriculumItem>(`/curriculum/${userId}`, {
+    method: "POST",
+    body: JSON.stringify({
+      course_id: (course as any).courseId,
+      semester: course.semester ?? "",
+      grade: course.grade,
+      completed: course.grade !== null,
+    }),
+  });
+  return {
+    id: data.course_id,
+    name: data.courses_master.course_name,
+    credits: data.courses_master.credits,
+    type: data.courses_master.course_type as Course["type"],
+    semester: data.semester,
+    grade: data.grade,
+  };
 }
