@@ -12,7 +12,7 @@ export const MOCK_SENIORS: Senior[] = [
     jobTitle: "UX 디자인 석사",
     skills: ["UX리서치", "인지 심리학", "학술 논문 작성"],
     profileImage: "/profile-kang.svg",
-    bio: "사용자 중심 설계를 추구하는 디자이너입니다.",
+    bio: "저는 대학교 3학년 때부터 백엔드 개발에 관심을 가지고 관련 과목들을 집중적으로 수강했습니다. 특히 데이터베이스와 네트워크 과목이 실무에 많은 도움이 되었습니다.",
     tips: "포트폴리오는 완성도보다 설명 능력이 중요해요. 왜 이 기술을 썼는지 말할 수 있어야 해요.",
     timetable: [
       {
@@ -32,6 +32,8 @@ export const MOCK_SENIORS: Senior[] = [
       },
     ],
     isAvailable: true,
+    scheduledSession: { datetime: "2026-04-05 10:00", title: "내일 - 4월 5일", description: "오전 10:00 대균 선배와 함께 하는 포폴 리뷰, 1층 예디대 건물" },
+
   },
   {
     id: "senior-2",

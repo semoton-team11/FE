@@ -120,7 +120,7 @@ export type Senior = {
   tips: string;
   timetable: TimetableEntry[];
   isAvailable: boolean;
-  scheduledSession?: { datetime: string; title: string };
+  scheduledSession?: { datetime: string; title: string; description?: string };
 };
 
 export type TimetableEntry = {

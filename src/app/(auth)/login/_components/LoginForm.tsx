@@ -121,9 +121,9 @@ export default function LoginForm({
             style={{
               width: "100%",
               background: "transparent",
-              border: errors.email ? "1.5px solid #9A001F" : "none",
-              borderBottom: errors.email ? "1.5px solid #9A001F" : "1.5px solid #E6BDBB99",
-              borderRadius: errors.email ? "6px" : "0",
+              border: errors.email?.trim() ? "1.5px solid #9A001F" : "none",
+              borderBottom: errors.email?.trim() ? "1.5px solid #9A001F" : "1.5px solid #E6BDBB99",
+              borderRadius: "0",
               padding: errors.email ? "6px 10px" : "6px 0",
               fontSize: "14px",
               color: "#1F1A1A",

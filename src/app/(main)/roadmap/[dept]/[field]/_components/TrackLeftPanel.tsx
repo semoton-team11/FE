@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import type { TrackMeta } from "../_lib/constants";
 
 type TrackLeftPanelProps = {
@@ -8,113 +9,190 @@ type TrackLeftPanelProps = {
   deptName: string;
 };
 
+const panelStyle: CSSProperties = {
+  width: "320px",
+  flexShrink: 0,
+  backgroundColor: "#FFFFFF",
+  borderRadius: "20px",
+  padding: "32px 28px",
+  display: "flex",
+  flexDirection: "column",
+  gap: "24px",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+};
+
+const titleStyle: CSSProperties = {
+  fontSize: "26px",
+  fontWeight: 700,
+  color: "#1F1A1A",
+  lineHeight: "1.3",
+};
+
+const sectionLabelStyle: CSSProperties = {
+  fontSize: "12px",
+  fontWeight: 600,
+  color: "#78716C",
+  letterSpacing: "0.6px",
+  textTransform: "uppercase",
+  lineHeight: "16px",
+  marginBottom: "8px",
+};
+
+const jobDefinitionTextStyle: CSSProperties = {
+  fontSize: "16px",
+  color: "#292524",
+  fontWeight: 400,
+  lineHeight: "26px",
+};
+
+const coreSkillsLabelStyle: CSSProperties = {
+  ...sectionLabelStyle,
+  marginBottom: "10px",
+};
+
+const skillsWrapStyle: CSSProperties = {
+  display: "flex",
+  flexWrap: "wrap",
+  gap: "8px",
+};
+
+const skillBadgeStyle: CSSProperties = {
+  padding: "6px 14px",
+  borderRadius: "6px",
+  border: "1.5px solid #E5E7EB",
+  fontSize: "12px",
+  color: "#44403C",
+  fontWeight: 600,
+  lineHeight: "16px",
+  textAlign: "center",
+};
+
+const insightsHeaderStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "6px",
+  marginBottom: "12px",
+};
+
+const insightsLabelStyle: CSSProperties = {
+  fontSize: "13px",
+  fontWeight: 600,
+  color: "#1F1A1A",
+};
+
+const insightsListStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "10px",
+};
+
+const insightsRowStyle: CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  marginBottom: "4px",
+};
+
+const insightsTextStyle: CSSProperties = {
+  fontSize: "10px",
+  color: "#78716C",
+  fontWeight: 400,
+  lineHeight: "15px",
+};
+
+const insightsPercentStyle: CSSProperties = {
+  fontSize: "10px",
+  color: "#78716C",
+  fontWeight: 600,
+  lineHeight: "15px",
+};
+
+const barTrackStyle: CSSProperties = {
+  height: "4px",
+  backgroundColor: "#E7E5E4",
+  borderRadius: "9999px",
+};
+
+const askLinkStyle: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: "8px",
+  padding: "16px 0",
+  backgroundColor: "#094F7A",
+  color: "#FFF",
+  borderRadius: "12px",
+  fontSize: "16px",
+  fontWeight: 400,
+  lineHeight: "24px",
+  textAlign: "center",
+  textDecoration: "none",
+};
+
+function getBarFillStyle(percent: number): CSSProperties {
+  return {
+    height: "100%",
+    width: `${percent}%`,
+    backgroundColor: "#9A001F",
+    borderRadius: "9999px",
+  };
+}
+
 export default function TrackLeftPanel({ track, deptName }: TrackLeftPanelProps) {
+  const seniorsHref = `/seniors?dept=${encodeURIComponent(deptName)}`;
+
   return (
-    <div
-      style={{
-        width: "320px",
-        flexShrink: 0,
-        backgroundColor: "#FFFFFF",
-        borderRadius: "20px",
-        padding: "32px 28px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "24px",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-      }}
-    >
-      {/* 제목 */}
-      <h2 style={{ fontSize: "26px", fontWeight: 700, color: "#1F1A1A", lineHeight: "1.3" }}>
+    <div style={panelStyle}>
+      <h2 style={titleStyle}>
         {track.title}
       </h2>
 
-      {/* JOB DEFINITION */}
       <div>
-        <p style={{ fontSize: "12px", fontWeight: 600, color: "#78716C", letterSpacing: "0.6px", textTransform: "uppercase", lineHeight: "16px", marginBottom: "8px" }}>
+        <p style={sectionLabelStyle}>
           Job Definition
         </p>
-        <p style={{ fontSize: "16px", color: "#292524", fontWeight: 400, lineHeight: "26px" }}>
+        <p style={jobDefinitionTextStyle}>
           {track.jobDefinition}
         </p>
       </div>
 
-      {/* CORE SKILLS */}
       <div>
-        <p style={{ fontSize: "12px", fontWeight: 600, color: "#78716C", letterSpacing: "0.6px", textTransform: "uppercase", lineHeight: "16px", marginBottom: "10px" }}>
+        <p style={coreSkillsLabelStyle}>
           Core Skills
         </p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+        <div style={skillsWrapStyle}>
           {track.coreSkills.map((skill) => (
-            <span
-              key={skill}
-              style={{
-                padding: "6px 14px",
-                borderRadius: "6px",
-                border: "1.5px solid #E5E7EB",
-                fontSize: "12px",
-                color: "#44403C",
-                fontWeight: 600,
-                lineHeight: "16px",
-                textAlign: "center",
-              }}
-            >
+            <span key={skill} style={skillBadgeStyle}>
               {skill}
             </span>
           ))}
         </div>
       </div>
 
-      {/* DATA INSIGHTS */}
       <div>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "12px" }}>
+        <div style={insightsHeaderStyle}>
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M9 12V6.75H12V12H9ZM4.5 12V0H7.5V12H4.5ZM0 12V3.75H3V12H0Z" fill="#9A001F"/>
           </svg>
-          <p style={{ fontSize: "13px", fontWeight: 600, color: "#1F1A1A" }}>
+          <p style={insightsLabelStyle}>
             Data Insights: 선배들의 필수 강의
           </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <div style={insightsListStyle}>
           {track.dataInsights.map((item) => (
             <div key={item.label}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                <span style={{ fontSize: "10px", color: "#78716C", fontWeight: 400, lineHeight: "15px" }}>{item.label}</span>
-                <span style={{ fontSize: "10px", color: "#78716C", fontWeight: 600, lineHeight: "15px" }}>{item.percent}%</span>
+              <div style={insightsRowStyle}>
+                <span style={insightsTextStyle}>{item.label}</span>
+                <span style={insightsPercentStyle}>{item.percent}%</span>
               </div>
-              <div style={{ height: "4px", backgroundColor: "#E7E5E4", borderRadius: "9999px" }}>
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${item.percent}%`,
-                    backgroundColor: "#9A001F",
-                    borderRadius: "9999px",
-                  }}
-                />
+              <div style={barTrackStyle}>
+                <div style={getBarFillStyle(item.percent)} />
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 선배에게 질문하기 버튼 */}
-      <Link
-        href="/seniors"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          padding: "16px 0",
-          backgroundColor: "#094F7A",
-          color: "#FFF",
-          borderRadius: "12px",
-          fontSize: "16px",
-          fontWeight: 400,
-          lineHeight: "24px",
-          textAlign: "center",
-          textDecoration: "none",
-        }}
-      >
+      <Link href={seniorsHref} style={askLinkStyle}>
         선배에게 질문하기
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
           <path d="M12.175 9H0V7H12.175L6.575 1.4L8 0L16 8L8 16L6.575 14.6L12.175 9Z" fill="white"/>

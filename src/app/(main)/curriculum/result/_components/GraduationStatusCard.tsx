@@ -15,7 +15,7 @@ export function GraduationStatusCard({
   completedByType, plannedByType, reqByType,
 }: GraduationStatusCardProps) {
   return (
-    <div style={{ position: "sticky", top: "64px", zIndex: 10, backgroundColor: "transparent", padding: "24px 24px 0" }}>
+    <div style={{ position: "sticky", top: "64px", zIndex: 10, backgroundColor: "#F6F6F6", padding: "24px 24px 16px" }}>
       <div style={{ width: LAYOUT.heroCardWidth, margin: "0 auto" }}>
         <div style={{ backgroundColor: "#FFFFFF", borderRadius: "20px", padding: "36px 40px 42px", boxShadow: "0 2px 16px rgba(0,0,0,0.08)" }}>
 

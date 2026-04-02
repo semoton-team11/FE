@@ -29,6 +29,9 @@ import type { ConnectionRequest, Message } from "@/types";
 import { MOCK_CONNECTIONS, MOCK_MESSAGES } from "@/mock";
 // import { supabase } from "@/lib/supabase";
 
+// 세션 중 새로 생성된 연결을 임시 저장
+const sessionConnections: ConnectionRequest[] = [];
+
 // ──────────────────────────────────────────────────────────────
 // getConnections  — 유저의 연결 요청 목록 조회
 // DB 테이블 : connections WHERE from_user_id = ?
@@ -46,7 +49,7 @@ export async function getConnections(userId: string): Promise<ConnectionRequest[
 
   // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   void userId;
-  return MOCK_CONNECTIONS;
+  return [...MOCK_CONNECTIONS, ...sessionConnections];
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 }
 
@@ -69,12 +72,14 @@ export async function sendConnectionRequest(
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  return {
+  const newConn: ConnectionRequest = {
     ...req,
     id: `conn-${Date.now()}`,
     status: "pending",
     createdAt: new Date().toISOString(),
   };
+  sessionConnections.push(newConn);
+  return newConn;
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 }
 
