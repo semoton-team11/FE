@@ -76,6 +76,17 @@ interface GraduationResponse {
   total_remaining: number;
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
+// 공통 헤더 (토큰 포함)
+const getHeaders = () => {
+  const token = localStorage.getItem("access_token");
+  return {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+};
+
 // ──────────────────────────────────────────────────────────────
 // getUserCourses  — 사용자가 이수한 과목 목록 반환
 // GET /curriculum/{user_id}
@@ -92,8 +103,6 @@ export async function getUserCourses(userId: string): Promise<Course[]> {
     grade: c.grade,
   }));
 }
-
-
 
 // ──────────────────────────────────────────────────────────────
 // getCurriculumStatus  — 졸업 요건 대비 이수 현황 계산
@@ -123,46 +132,48 @@ export async function getCurriculumStatus(
 // GET /courses/departments/{dept_name}
 // DB 테이블 : catalog_courses WHERE department_id = ?
 // ──────────────────────────────────────────────────────────────
-export async function getCatalogCourses(departmentId: string): Promise<CatalogCourse[]> {
-  const data = await apiRequest<CoursesResponse[]>(
-    `/courses/departments/${encodeURIComponent(departmentId)}`
-  );
-  return data.map((c) => ({
-    id: c.course_id,
-    name: c.course_name,
-    credits: c.credits ?? 0,
-    code: c.course_id,
-    type: c.course_type as CatalogCourse["type"],
-    departmentId: c.dept_name ?? departmentId,
-  }));
+export async function getCatalogCourses(): Promise<CatalogCourse[]> {
+  return await apiRequest<CatalogCourse[]>(`/curriculum/courses`);
 }
-
-
 
 // ──────────────────────────────────────────────────────────────
 // getCurriculumRequirement  — 학과별 졸업 요건 반환
 // GET /curriculum/{user_id}/graduation
 // DB 테이블 : curriculum_requirements WHERE department_id = ?
 // ──────────────────────────────────────────────────────────────
-export async function getCurriculumRequirement(
-  departmentId: string,
-  userId?: string
-): Promise<CurriculumRequirement> {
-  if (!userId) throw new Error("로그인이 필요합니다.");
+export async function getCurriculumRequirement(): Promise<CurriculumRequirement> {
+  try {
+    const response = await fetch(`${API_URL}/curriculum/requirements`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
 
-  const data = await apiRequest<GraduationResponse>(
-    `/curriculum/${userId}/graduation`
-  );
-  const get = (category: string) =>
-    data.categories.find((c) => c.category === category);
+    const result = await response.json();
 
-  return {
-    departmentId,
-    required: get("전공필수")?.required ?? 0,
-    elective: get("전공선택")?.required ?? 0,
-    basic:    get("전공기초")?.required ?? 0,
-    liberal:  0,
-  };
+    if (!response.ok) {
+      throw new Error(result.message || "요건 정보를 가져오지 못했습니다.");
+    }
+
+    // 💡 백엔드 응답(result.data)을 FE 타입(CurriculumRequirement)으로 매핑
+    const { dept_name, required, elective, basic, liberal, total } = result.data;
+
+    return {
+      departmentId: dept_name,
+      required: required, 
+      elective: elective, 
+      basic: basic,           
+      liberal: liberal,
+    };
+  } catch (error) {
+    console.error("getCurriculumRequirement Error:", error);
+    return { 
+      departmentId: "학과 정보 없음", 
+      required: 0, 
+      elective: 0, 
+      basic: 0, 
+      liberal: 0 
+    };
+  }
 }
 
 

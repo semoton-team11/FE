@@ -25,16 +25,32 @@ export default function CurriculumPage() {
   // ── 데이터 로드 ──────────────────────────────────────────────
   useEffect(() => {
     getCurrentUser().then(async (user) => {
+      if (!user) return;
       setUserId(user.id);
-      console.log("user:", user);
-      const [courses, req, savedChecked] = await Promise.all([
-        getCatalogCourses(user.departmentId),
-        getCurriculumRequirement(user.departmentId, user.id),
-        getCheckedCourses(user.id),
-      ]);
-      setCatalog(courses);
-      setRequirement(req);
-      setChecked(savedChecked);
+
+      try {
+        const [courses, req, savedChecked] = await Promise.all([
+          getCatalogCourses(),
+          getCurriculumRequirement(),
+          getCheckedCourses(user.id),
+        ]);
+        
+        const mappedCourses = courses.map((c: any) => ({
+          id: c.id || c.course_id,
+          name: c.name || c.course_name,
+          type: c.type || c.course_type,
+          credits: c.credits, 
+          departmentId: c.dept_name || "",
+          code: c.code || c.course_id
+        }));
+
+        setCatalog(mappedCourses);
+        setRequirement(req);
+        setChecked(savedChecked instanceof Set ? savedChecked : new Set(savedChecked));
+      } catch (err) {
+        console.error("데이터 로딩 에러:", err);
+        setCatalog([]);
+      }
     });
   }, []);
 
@@ -66,12 +82,25 @@ export default function CurriculumPage() {
 
   // ── 파생 데이터 ──────────────────────────────────────────────
   const category = CATEGORY_CONFIG.find(c => c.type === selectedType)!;
-  const currentCourses = catalog.filter(c => c.type === selectedType);
+  // const currentCourses = catalog.filter(c => c.type === selectedType);
+
+  // const reqTotal = requirement
+  //   ? ({ 전공기초: requirement.basic, 전공필수: requirement.required, 전공선택: requirement.elective } as Record<string, number>)[selectedType] ?? 0
+  //   : 0;
+
+  const currentCourses = catalog.filter(c => {
+    const cType = (c as any).course_type || (c as any).type;
+    return cType === selectedType;
+  });
 
   const reqTotal = requirement
-    ? ({ 전공기초: requirement.basic, 전공필수: requirement.required, 전공선택: requirement.elective } as Record<string, number>)[selectedType] ?? 0
+    ? ({ 
+        전공기초: (requirement as any).basic, 
+        전공필수: (requirement as any).required, 
+        전공선택: (requirement as any).elective 
+      } as Record<string, number>)[selectedType] ?? 0
     : 0;
-
+  
   const completedCredits = currentCourses
     .filter(c => checked.has(c.id))
     .reduce((sum, c) => sum + c.credits, 0);
