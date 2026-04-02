@@ -2,10 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCatalogCourses, getCurriculumRequirement, getCheckedCourses, saveCheckedCourses } from "@/services/curriculum";
+import { getCurriculumStatus, getCatalogCourses, getCurriculumRequirement, getCheckedCourses, saveCheckedCourses } from "@/services/curriculum";
 import { getCurrentUser } from "@/services/user";
 import type { CatalogCourse, CurriculumRequirement } from "@/types";
-
 import { CATEGORY_ORDER } from "./_lib/constants";
 import type { CategoryType } from "./_lib/constants";
 import { GraduationStatusCard } from "./_components/GraduationStatusCard";
@@ -19,15 +18,19 @@ export default function CurriculumResultPage() {
   const [requirement, setRequirement] = useState<CurriculumRequirement | null>(null);
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [planned, setPlanned] = useState<Set<string>>(new Set());
+  const [status, setStatus] = useState<any>(null); 
 
   // ── 데이터 로드 ──────────────────────────────────────────────
   useEffect(() => {
     getCurrentUser().then(async (user) => {
+      if (!user) return;
+      
       setUserId(user.id);
-      const [courses, req, savedChecked] = await Promise.all([
-        getCatalogCourses(user.departmentId),
-        getCurriculumRequirement(user.departmentId, user.id),
+      const [courses, req, savedChecked, calcStatus] = await Promise.all([
+        getCatalogCourses(),
+        getCurriculumRequirement(),
         getCheckedCourses(user.id),
+        getCurriculumStatus(user.id)
       ]);
       setCatalog(courses);
       setRequirement(req);

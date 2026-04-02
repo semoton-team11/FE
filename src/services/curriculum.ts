@@ -111,18 +111,42 @@ export async function getUserCourses(userId: string): Promise<Course[]> {
 // ──────────────────────────────────────────────────────────────
 export async function getCurriculumStatus(
   userId: string,
-  departmentId: string
 ): Promise<CurriculumStatus> {
-  const data = await apiRequest<GraduationResponse>(
+  const response = await apiRequest<GraduationResponse>(
     `/curriculum/${userId}/graduation`
   );
-  const get = (category: string) =>
-    data.categories.find((c) => c.category === category);
+
+  const data = (response as any).data || response;
+
+  if (!data || !data.categories) {
+    console.error("졸업 요건 데이터를 불러오지 못했습니다.", data);
+    return {
+      required: { total: 0, completed: 0 },
+      elective: { total: 0, completed: 0 },
+      basic: { total: 0, completed: 0 },
+    };
+  }
+
+  const findCat = (categoryName: string) =>
+    data.categories.find((c: any) => c.category.trim() === categoryName);
+
+  const majorRequired = findCat("전공필수");
+  const majorElective = findCat("전공선택");
+  const majorBasic = findCat("전공기초");
 
   return {
-    required: { total: get("전공필수")?.required ?? 0, completed: get("전공필수")?.completed ?? 0 },
-    elective: { total: get("전공선택")?.required ?? 0, completed: get("전공선택")?.completed ?? 0 },
-    basic:    { total: get("전공기초")?.required ?? 0, completed: get("전공기초")?.completed ?? 0 },
+    required: { 
+      total: majorRequired?.required ?? 0, 
+      completed: majorRequired?.completed ?? 0 
+    },
+    elective: { 
+      total: majorElective?.required ?? 0, 
+      completed: majorElective?.completed ?? 0 
+    },
+    basic: { 
+      total: majorBasic?.required ?? 0, 
+      completed: majorBasic?.completed ?? 0 
+    },
   };
 }
 
@@ -206,52 +230,78 @@ export async function saveCheckedCourses(
   userId: string,
   checkedIds: string[]
 ): Promise<void> {
-  try {
-    const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
-    const checkedSet = new Set(checkedIds);
-    const currentMap = new Map(current.map((c) => [c.course_id, c]));
+//   try {
+//     const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
+//     const checkedSet = new Set(checkedIds);
+//     const currentMap = new Map(current.map((c) => [c.course_id, c]));
 
-    // 새로 체크된 과목 → POST
-    const toAdd = checkedIds.filter((id) => !currentMap.has(id));
+//     // 새로 체크된 과목 → POST
+//     const toAdd = checkedIds.filter((id) => !currentMap.has(id));
 
-    // 체크 해제된 과목 → DELETE
-    const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
+//     // 체크 해제된 과목 → DELETE
+//     const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
 
-    await Promise.all([
-      ...toAdd.map((courseId) =>
-        apiRequest(`/curriculum/${userId}`, {
-          method: "POST",
-          body: JSON.stringify({
-            course_id: courseId,
-            semester: "",
-            grade: null,
-            completed: true,  // 항상 true 고정
-          }),
-        })
-      ),
-      ...toDelete.map((c) =>
-        apiRequest(`/curriculum/${userId}/${c.id}`, {
-          method: "DELETE",
-        })
-      ),
-    ]);
-  } catch {
-    // API 미연결 시 localStorage에 저장 (디자인 리뷰 모드)
-    if (typeof window !== "undefined") {
-      localStorage.setItem(`checked_courses_${userId}`, JSON.stringify(checkedIds));
-      localStorage.setItem(`last_planned_${userId}`, JSON.stringify(checkedIds));
-    }
-  }
-}
+//     await Promise.all([
+//       ...toAdd.map((courseId) =>
+//         apiRequest(`/curriculum/${userId}`, {
+//           method: "POST",
+//           body: JSON.stringify({
+//             course_id: courseId,
+//             semester: "",
+//             grade: null,
+//             completed: true,  // 항상 true 고정
+//           }),
+//         })
+//       ),
+//       ...toDelete.map((c) =>
+//         apiRequest(`/curriculum/${userId}/${c.id}`, {
+//           method: "DELETE",
+//         })
+//       ),
+//     ]);
+//   } catch {
+//     // API 미연결 시 localStorage에 저장 (디자인 리뷰 모드)
+//     if (typeof window !== "undefined") {
+//       localStorage.setItem(`checked_courses_${userId}`, JSON.stringify(checkedIds));
+//       localStorage.setItem(`last_planned_${userId}`, JSON.stringify(checkedIds));
+//     }
+//   }
+// }
 
-// ──────────────────────────────────────────────────────────────
-// getPlannedCourses  — 홈화면 우선순위 과목 표시용
-// localStorage 키: last_planned_{userId}
-// ──────────────────────────────────────────────────────────────
-export async function getPlannedCourses(userId: string): Promise<Set<string>> {
-  if (typeof window === "undefined") return new Set();
-  const raw = localStorage.getItem(`last_planned_${userId}`);
-  return new Set(raw ? JSON.parse(raw) : []);
+// // ──────────────────────────────────────────────────────────────
+// // getPlannedCourses  — 홈화면 우선순위 과목 표시용
+// // localStorage 키: last_planned_{userId}
+// // ──────────────────────────────────────────────────────────────
+// export async function getPlannedCourses(userId: string): Promise<Set<string>> {
+//   if (typeof window === "undefined") return new Set();
+//   const raw = localStorage.getItem(`last_planned_${userId}`);
+//   return new Set(raw ? JSON.parse(raw) : []);
+  const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
+  const currentCourseIds = new Set(current.map((c) => c.course_id));
+  const checkedSet = new Set(checkedIds);
+
+  const toAdd = checkedIds.filter((id) => !currentCourseIds.has(id));
+
+  const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
+
+  await Promise.all([
+    ...toAdd.map((courseId) =>
+      apiRequest(`/curriculum/${userId}`, {
+        method: "POST",
+        body: JSON.stringify({
+          course_id: courseId,
+          semester: "2024-1",
+          grade: "P",
+          completed: true,
+        }),
+      })
+    ),
+    ...toDelete.map((c) =>
+      apiRequest(`/curriculum/${userId}/${c.id}`, {
+        method: "DELETE",
+      })
+    ),
+  ]);
 }
 
 // ──────────────────────────────────────────────────────────────
