@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getCurrentUser } from "@/services/user";
 import { MOCK_USER } from "@/mock";
-import { getCurriculumStatus, getPlannedCourses, getCatalogCourses } from "@/services/curriculum";
+import { getPlannedCourses, getCatalogCourses, getCheckedCourses, getCurriculumRequirement } from "@/services/curriculum";
 import { getSeniors } from "@/services/seniors";
 import type { User, CurriculumStatus, Senior, CatalogCourse } from "@/types";
 import { Badge } from "@/components/ui/badge";
@@ -26,15 +26,27 @@ export default function HomePage() {
   useEffect(() => {
     getCurrentUser().catch(() => MOCK_USER).then(async (u) => {
       setUser(u);
-      const [s, fetchedSeniors, checked, catalog] = await Promise.all([
-        getCurriculumStatus(u.id, u.departmentId).catch(() => null),
+      const [fetchedSeniors, checkedIds, plannedIds, catalog, req] = await Promise.all([
         getSeniors({ departmentId: u.departmentId }),
+        getCheckedCourses(u.id),
         getPlannedCourses(u.id),
         getCatalogCourses().catch(() => []),
+        getCurriculumRequirement().catch(() => null),
       ]);
-      setStatus(s);
       setSeniors(fetchedSeniors);
-      setCheckedCourses(catalog.filter((c) => checked.has(c.id)));
+      // 커리큘럼 계획 카드: 시뮬레이터에서 기록한 과목
+      setCheckedCourses(catalog.filter((c) => plannedIds.has(c.id)));
+      // 학업 현황 카드: 체크된 과목으로 수료율 직접 계산
+      if (req) {
+        const sum = (type: string) =>
+          catalog.filter(c => c.type === type && checkedIds.has(c.id))
+                 .reduce((s, c) => s + c.credits, 0);
+        setStatus({
+          basic:    { total: req.basic,    completed: sum("전공기초") },
+          required: { total: req.required, completed: sum("전공필수") },
+          elective: { total: req.elective, completed: sum("전공선택") },
+        });
+      }
     });
   }, []);
 
