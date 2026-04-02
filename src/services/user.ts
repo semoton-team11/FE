@@ -14,6 +14,9 @@
 
 import type { User } from "@/types";
 import { MOCK_USER } from "@/mock";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 // import { supabase } from "@/lib/supabase";
 
 // ──────────────────────────────────────────────────────────────
@@ -22,7 +25,45 @@ import { MOCK_USER } from "@/mock";
 // ★ 반환값의 departmentId → getCatalogCourses() 에 전달
 // ──────────────────────────────────────────────────────────────
 export async function getCurrentUser(): Promise<User> {
+  const token = localStorage.getItem("access_token");
 
+  if (!token) {
+    throw new Error("로그인이 필요합니다.");
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/auth/me`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "사용자 정보를 가져오는데 실패했습니다.");
+    }
+
+    const userData = result.data;
+    const meta = userData.user_metadata;
+
+    return {
+      id: userData?.id || MOCK_USER.id,
+      name: meta?.name || MOCK_USER.name,
+      email: userData?.email || MOCK_USER.email,
+      departmentId: meta?.department || MOCK_USER.departmentId,
+      interestedFields: meta?.interested_fields ?? MOCK_USER.interestedFields,
+      profileImage: meta?.profile_image ?? MOCK_USER.profileImage,
+      courses: MOCK_USER.courses,
+      scrapedSeniorIds: meta?.scraped_senior_ids ?? MOCK_USER.scrapedSeniorIds,
+      scrapedCourseIds: meta?.scraped_course_ids ?? MOCK_USER.scrapedCourseIds,
+    };
+  } catch (error) {
+    console.error("getCurrentUser Error:", error);
+    throw error;
+  }
   // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
   // const { data: { user }, error: authError } = await supabase.auth.getUser();
   // if (authError || !user) throw new Error("로그인이 필요합니다.");
@@ -48,7 +89,6 @@ export async function getCurrentUser(): Promise<User> {
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  return MOCK_USER;
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 }
 
