@@ -1,3 +1,5 @@
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  서비스: 인증 (auth)                                          ║
 // ║  현재 모드 : MOCK (console.log 처리)                          ║
@@ -53,7 +55,23 @@ export type SignupData = {
 // ★ department_id 가 커리큘럼 과목 조회의 핵심 키
 // ──────────────────────────────────────────────────────────────
 export async function signUp(data: SignupData): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${API_URL}/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "회원가입에 실패했습니다.");
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
   // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
   // try {
   //   const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -86,8 +104,8 @@ export async function signUp(data: SignupData): Promise<{ success: boolean; erro
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  console.log("[mock] signUp:", data);
-  return { success: true };
+  // console.log("[mock] signUp:", data);
+  // return { success: true };
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 }
 
@@ -98,7 +116,37 @@ export async function signIn(
   email: string,
   password: string
 ): Promise<{ success: boolean; error?: string }> {
+  try {
+    const response = await fetch(`${API_URL}/auth/login`, { 
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
 
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || "로그인에 실패했습니다.");
+    }
+
+    const loginData = result.data;
+
+    // 토큰 저장 (나중에 세션 관리 시 중요함)
+    if (loginData && loginData.access_token) {
+      localStorage.setItem("access_token", loginData.access_token);
+      localStorage.setItem("user_id", loginData.user_id);
+      localStorage.setItem("user_name", loginData.name);
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
   // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
   // const { error } = await supabase.auth.signInWithPassword({ email, password });
   // if (error) return { success: false, error: error.message };
@@ -106,9 +154,9 @@ export async function signIn(
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  console.log("[mock] signIn:", email);
-  void password;
-  return { success: true };
+  // console.log("[mock] signIn:", email);
+  // void password;
+  // return { success: true };
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 }
 
