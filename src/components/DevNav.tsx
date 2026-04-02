@@ -7,10 +7,11 @@ import { useState } from "react";
 const PAGES = [
   { label: "홈", href: "/" },
   { label: "커리큘럼", href: "/curriculum" },
-  { label: "로드맵", href: "/roadmap" },
   { label: "선배 목록", href: "/seniors" },
   { label: "선배 상세", href: "/seniors/senior-1" },
   { label: "마이페이지", href: "/mypage" },
+  { label: "프로필 설정", href: "/mypage/settings" },
+  { label: "캘린더", href: "/calendar" },
   { label: "메시지", href: "/messages" },
   { label: "로그인", href: "/login" },
   { label: "회원가입", href: "/signup" },
@@ -32,7 +33,7 @@ export default function DevNav() {
           left: open ? "144px" : "0px",
           top: "50%",
           transform: "translateY(-50%)",
-          zIndex: 51,
+          zIndex: 9999,
           backgroundColor: "#18181b",
           color: "#a1a1aa",
           border: "none",
@@ -57,7 +58,7 @@ export default function DevNav() {
           height: "100%",
           width: "144px",
           transition: "left 200ms ease",
-          zIndex: 50,
+          zIndex: 9998,
         }}
         className="bg-zinc-900 text-zinc-100 text-xs flex flex-col gap-1 p-2 pt-4 overflow-y-auto"
       >

@@ -28,7 +28,7 @@ export async function getCurrentUser(): Promise<User> {
   const token = localStorage.getItem("access_token");
 
   if (!token) {
-    throw new Error("로그인이 필요합니다.");
+    return MOCK_USER;
   }
 
   try {

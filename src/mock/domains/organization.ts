@@ -16,10 +16,12 @@ export const MOCK_DEPARTMENTS: Department[] = [
 ];
 
 export const MOCK_FIELDS: Field[] = [
-  { id: "field-1", name: "프론트엔드",  description: "웹 UI/UX 개발, React/Next.js 등",       departmentIds: ["dept-1"] },
-  { id: "field-2", name: "백엔드",      description: "서버, API, 데이터베이스 설계 및 개발",  departmentIds: ["dept-1", "dept-2"] },
-  { id: "field-3", name: "AI/ML",       description: "머신러닝, 딥러닝, 데이터 사이언스",     departmentIds: ["dept-1", "dept-4"] },
-  { id: "field-4", name: "금융공학",    description: "핀테크, 퀀트, 금융 데이터 분석",        departmentIds: ["dept-3", "dept-4"] },
+  { id: "field-1", name: "프론트엔드",          description: "웹 UI/UX 개발, React/Next.js 등",       departmentIds: ["dept-1"] },
+  { id: "field-2", name: "백엔드",              description: "서버, API, 데이터베이스 설계 및 개발",  departmentIds: ["dept-1", "dept-2"] },
+  { id: "field-3", name: "AI/ML",               description: "머신러닝, 딥러닝, 데이터 사이언스",     departmentIds: ["dept-1", "dept-4"] },
+  { id: "field-4", name: "금융공학",            description: "핀테크, 퀀트, 금융 데이터 분석",        departmentIds: ["dept-3", "dept-4"] },
+  { id: "field-5", name: "UX/UI 디자인",        description: "UX 리서치, UI 디자인, 프로토타이핑",    departmentIds: ["dept-5"] },
+  { id: "field-6", name: "공간/인테리어 디자인", description: "공간 기획, 인테리어, 환경 디자인",      departmentIds: ["dept-5"] },
 ];
 
 export const MOCK_JOBS: Job[] = [

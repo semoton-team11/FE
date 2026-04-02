@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { getCurrentUser } from "@/services/user";
-import { getCurriculumStatus } from "@/services/curriculum";
+import { MOCK_USER } from "@/mock";
+import { getCurriculumStatus, getPlannedCourses, getCatalogCourses } from "@/services/curriculum";
 import { getSeniors } from "@/services/seniors";
-import type { User, CurriculumStatus, Senior } from "@/types";
+import type { User, CurriculumStatus, Senior, CatalogCourse } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import AcademicStatusCard from "./_components/AcademicStatusCard";
 import PriorityCoursesCard from "./_components/PriorityCoursesCard";
@@ -16,20 +17,24 @@ export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<CurriculumStatus | null>(null);
   const [seniors, setSeniors] = useState<Senior[]>([]);
+  const [checkedCourses, setCheckedCourses] = useState<CatalogCourse[]>([]);
   const [seniorIndex, setSeniorIndex] = useState(0);
   const [sliding, setSliding] = useState(false);
   const [slideDir, setSlideDir] = useState<"left" | "right">("left");
 
   // ── 데이터 로드 ──
   useEffect(() => {
-    getCurrentUser().then(async (u) => {
+    getCurrentUser().catch(() => MOCK_USER).then(async (u) => {
       setUser(u);
-      const [s, fetchedSeniors] = await Promise.all([
-        getCurriculumStatus(u.id, u.departmentId),
+      const [s, fetchedSeniors, checked, catalog] = await Promise.all([
+        getCurriculumStatus(u.id, u.departmentId).catch(() => null),
         getSeniors({ departmentId: u.departmentId }),
+        getPlannedCourses(u.id),
+        getCatalogCourses().catch(() => []),
       ]);
       setStatus(s);
       setSeniors(fetchedSeniors);
+      setCheckedCourses(catalog.filter((c) => checked.has(c.id)));
     });
   }, []);
 
@@ -71,6 +76,7 @@ export default function HomePage() {
     : 1;
   const overallPct = Math.round((totalCompleted / totalRequired) * 100);
   const isZeroState = false;
+  const isPlanZeroState = checkedCourses.length === 0;
 
   return (
     <div className="flex flex-col gap-[49.54px]" style={{ fontFamily: "var(--font-roboto), sans-serif" }}>
@@ -111,7 +117,7 @@ export default function HomePage() {
       {/* ── 메인 카드 3개 ── */}
       <section className="flex flex-wrap" style={{ gap: "33.02px" }}>
         <AcademicStatusCard status={status} overallPct={overallPct} isZeroState={isZeroState} />
-        <PriorityCoursesCard isZeroState={isZeroState} />
+        <PriorityCoursesCard isZeroState={isPlanZeroState} checkedCourses={checkedCourses} />
         <RecommendedSeniorCard
           seniors={seniors}
           seniorIndex={seniorIndex}

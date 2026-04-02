@@ -32,11 +32,11 @@ export default function MegaDropdown({ isOpen, menu, onLinkClick }: MegaDropdown
     >
       <div
         className="max-w-[1280px] mx-auto"
-        style={{ paddingTop: "36px", paddingBottom: "36px", paddingLeft: "100px", paddingRight: "24px" }}
+        style={{ paddingTop: "36px", paddingBottom: "36px", paddingLeft: "16px", paddingRight: "24px" }}
       >
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-16 w-fit">
           {menu.map((group, colIdx) => (
-            <div key={group.title} className="flex flex-col gap-4">
+            <div key={group.title} className={`flex flex-col gap-4 ${colIdx === 1 ? "ml-[20px]" : colIdx === 2 ? "ml-[40px]" : ""}`}>
               <p
                 className="text-xs font-semibold text-[#9CA3AF] tracking-widest uppercase"
                 style={{
