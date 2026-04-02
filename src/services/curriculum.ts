@@ -111,18 +111,42 @@ export async function getUserCourses(userId: string): Promise<Course[]> {
 // ──────────────────────────────────────────────────────────────
 export async function getCurriculumStatus(
   userId: string,
-  departmentId: string
 ): Promise<CurriculumStatus> {
-  const data = await apiRequest<GraduationResponse>(
+  const response = await apiRequest<GraduationResponse>(
     `/curriculum/${userId}/graduation`
   );
-  const get = (category: string) =>
-    data.categories.find((c) => c.category === category);
+
+  const data = (response as any).data || response;
+
+  if (!data || !data.categories) {
+    console.error("졸업 요건 데이터를 불러오지 못했습니다.", data);
+    return {
+      required: { total: 0, completed: 0 },
+      elective: { total: 0, completed: 0 },
+      basic: { total: 0, completed: 0 },
+    };
+  }
+
+  const findCat = (categoryName: string) =>
+    data.categories.find((c: any) => c.category.trim() === categoryName);
+
+  const majorRequired = findCat("전공필수");
+  const majorElective = findCat("전공선택");
+  const majorBasic = findCat("전공기초");
 
   return {
-    required: { total: get("전공필수")?.required ?? 0, completed: get("전공필수")?.completed ?? 0 },
-    elective: { total: get("전공선택")?.required ?? 0, completed: get("전공선택")?.completed ?? 0 },
-    basic:    { total: get("전공기초")?.required ?? 0, completed: get("전공기초")?.completed ?? 0 },
+    required: { 
+      total: majorRequired?.required ?? 0, 
+      completed: majorRequired?.completed ?? 0 
+    },
+    elective: { 
+      total: majorElective?.required ?? 0, 
+      completed: majorElective?.completed ?? 0 
+    },
+    basic: { 
+      total: majorBasic?.required ?? 0, 
+      completed: majorBasic?.completed ?? 0 
+    },
   };
 }
 
@@ -200,7 +224,6 @@ export async function getCheckedCourses(userId: string): Promise<Set<string>> {
 // ──────────────────────────────────────────────────────────────
 // saveCheckedCourses  — 이수 체크 과목 ID 목록 저장
 // DB 테이블 : user_courses (delete + bulk insert)
-// 현재     : localStorage
 // ──────────────────────────────────────────────────────────────
 export async function saveCheckedCourses(
   userId: string,
@@ -208,13 +231,13 @@ export async function saveCheckedCourses(
 ): Promise<void> {
   try {
     const current = await apiRequest<CurriculumItem[]>(`/curriculum/${userId}`);
+    const currentCourseIds = new Set(current.map((c) => c.course_id));
     const checkedSet = new Set(checkedIds);
-    const currentMap = new Map(current.map((c) => [c.course_id, c]));
 
-    // 새로 체크된 과목 → POST
-    const toAdd = checkedIds.filter((id) => !currentMap.has(id));
+    // 1. 새로 체크된 과목 → POST (DB에 없는 것만 추가)
+    const toAdd = checkedIds.filter((id) => !currentCourseIds.has(id));
 
-    // 체크 해제된 과목 → DELETE
+    // 2. 체크 해제된 과목 → DELETE (DB에는 있지만 체크 해제된 것)
     const toDelete = current.filter((c) => !checkedSet.has(c.course_id));
 
     await Promise.all([
@@ -223,9 +246,9 @@ export async function saveCheckedCourses(
           method: "POST",
           body: JSON.stringify({
             course_id: courseId,
-            semester: "",
-            grade: null,
-            completed: true,  // 항상 true 고정
+            semester: "2024-1", // 기본 학기 설정
+            grade: "P",        // 기본 성적 설정
+            completed: true,
           }),
         })
       ),
@@ -235,8 +258,8 @@ export async function saveCheckedCourses(
         })
       ),
     ]);
-  } catch {
-    // API 미연결 시 localStorage에 저장 (디자인 리뷰 모드)
+  } catch (error) {
+    console.error("저장 중 에러 발생, 로컬 스토리지를 사용합니다.", error);
     if (typeof window !== "undefined") {
       localStorage.setItem(`checked_courses_${userId}`, JSON.stringify(checkedIds));
       localStorage.setItem(`last_planned_${userId}`, JSON.stringify(checkedIds));
@@ -246,7 +269,6 @@ export async function saveCheckedCourses(
 
 // ──────────────────────────────────────────────────────────────
 // getPlannedCourses  — 홈화면 우선순위 과목 표시용
-// localStorage 키: last_planned_{userId}
 // ──────────────────────────────────────────────────────────────
 export async function getPlannedCourses(userId: string): Promise<Set<string>> {
   if (typeof window === "undefined") return new Set();
