@@ -48,7 +48,7 @@ export type CatalogCourse = {
   credits: number;
   code: string;          // 과목 코드 (예: "FD101")
   type: CourseType;
-  departmentId: string;
+  department: string;
 };
 
 /** 학과별 졸업 요건 */
