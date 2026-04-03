@@ -93,7 +93,7 @@ export async function getSeniors(filters?: {
     profileImage: s.profile_image ?? null,
     bio: s.bio ?? "",
     tips: s.tips ?? "",
-    timetable: [],
+    timetable: s.timetable ?? [],
     isAvailable: s.is_available ?? false,
   }));
 }
