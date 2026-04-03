@@ -27,7 +27,7 @@ export default function HomePage() {
     getCurrentUser().catch(() => MOCK_USER).then(async (u) => {
       setUser(u);
       const [fetchedSeniors, checkedIds, plannedIds, catalog, req, calcStatus] = await Promise.all([
-        getSeniors({ departmentId: u.departmentId }),
+        getSeniors({ departmentId: u.department }),
         getCheckedCourses(u.id),
         getPlannedCourses(u.id),
         getCatalogCourses().catch(() => []),

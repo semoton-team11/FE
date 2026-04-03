@@ -55,7 +55,7 @@ export default function MyPage() {
     .filter((f) => user.interestedFields.includes(f.id))
     .map((f) => f.name);
 
-  const deptName = departments.find((d) => d.id === user.departmentId)?.name ?? "";
+  const deptName = departments.find((d) => d.id === user.department)?.name ?? "";
 
   return (
     <div style={pageStyle}>

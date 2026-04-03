@@ -21,8 +21,8 @@ export default function CurriculumSummaryPage() {
     getCurrentUser().then(async (user) => {
       setUserId(user.id);
       const [courses, req] = await Promise.all([
-        getCatalogCourses(user.departmentId),
-        getCurriculumRequirement(user.departmentId, user.id),
+        getCatalogCourses(),
+        getCurriculumRequirement(),
       ]);
       setCatalog(courses);
       setRequirement(req);

@@ -161,7 +161,11 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  departmentId: string;
+  department: string;
+  student_id: number;
+  created_at: string;
+  is_graduated: boolean;
+  grade: number;
   interestedFields: string[]; // fieldId[]
   profileImage: string | null;
   courses: Course[];           // 내가 수강한 과목들

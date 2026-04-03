@@ -5,7 +5,11 @@ export const MOCK_USER: User = {
   id: "user-1",
   name: "이연수",
   email: "yeonsu@khu.ac.kr",
-  departmentId: "dept-5", // 산업디자인학과
+  department: "dept-5", // 산업디자인학과
+  student_id: 2022110182,
+  created_at: "2025.04.01",
+  is_graduated: false,
+  grade: 3,
   interestedFields: ["field-5", "field-6"],
   profileImage: null,
   courses: [
