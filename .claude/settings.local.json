@@ -43,7 +43,12 @@
       "Bash(ls /Users/tom/Desktop/projects/semotone-fe/src/app/\\\\\\(main\\\\\\)/roadmap/_lib/)",
       "Bash(kill 19001)",
       "Bash(git fetch:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(git pull:*)",
+      "Bash(head -40 git diff HEAD...origin/dev -- \"src/app/\\(main\\)/mypage/page.tsx\")",
+      "Bash(sed -i '' 's/user\\\\.departmentId/user.department/g' \"src/app/\\(main\\)/mypage/page.tsx\")",
+      "Bash(sed -i '' 's/departmentId: dept?.id/departmentId: deptName/g' \"src/app/\\(main\\)/seniors/page.tsx\")",
+      "Bash(git commit:*)"
     ]
   }
 }
