@@ -40,7 +40,7 @@ export default function CurriculumPage() {
           name: c.name || c.course_name,
           type: c.type || c.course_type,
           credits: c.credits, 
-          departmentId: c.dept_name || "",
+          department: c.dept_name || "",
           code: c.code || c.course_id
         }));
 

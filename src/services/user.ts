@@ -26,13 +26,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 // ──────────────────────────────────────────────────────────────
 export async function getCurrentUser(): Promise<User> {
   const token = localStorage.getItem("access_token");
-
-  if (!token) {
-    return MOCK_USER;
-  }
+  const userId = localStorage.getItem("user_id");
+  if (!token) throw new Error("로그인이 필요합니다.");
 
   try {
-    const response = await fetch(`${API_URL}/auth/me`, {
+    const response = await fetch(`${API_URL}/profile/${userId}`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -46,50 +44,25 @@ export async function getCurrentUser(): Promise<User> {
       throw new Error(result.message || "사용자 정보를 가져오는데 실패했습니다.");
     }
 
-    const userData = result.data;
-    const meta = userData.user_metadata;
-
     return {
-      id: userData?.id || MOCK_USER.id,
-      name: meta?.name || MOCK_USER.name,
-      email: userData?.email || MOCK_USER.email,
-      departmentId: meta?.department || MOCK_USER.departmentId,
-      interestedFields: meta?.interested_fields ?? MOCK_USER.interestedFields,
-      profileImage: meta?.profile_image ?? MOCK_USER.profileImage,
+      id: result.id,
+      name: result.name,
+      email: result.email,
+      department: result.department,
+      student_id: result.student_id,
+      created_at: result.created_at,
+      is_graduated: result.is_graduated,
+      grade: result.grade,
+      interestedFields: MOCK_USER.interestedFields,
+      profileImage: MOCK_USER.profileImage,
       courses: MOCK_USER.courses,
-      scrapedSeniorIds: meta?.scraped_senior_ids ?? MOCK_USER.scrapedSeniorIds,
-      scrapedCourseIds: meta?.scraped_course_ids ?? MOCK_USER.scrapedCourseIds,
+      scrapedSeniorIds: MOCK_USER.scrapedSeniorIds,
+      scrapedCourseIds: MOCK_USER.scrapedCourseIds,
     };
   } catch (error) {
     console.error("getCurrentUser Error:", error);
     throw error;
   }
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data: { user }, error: authError } = await supabase.auth.getUser();
-  // if (authError || !user) throw new Error("로그인이 필요합니다.");
-  //
-  // const { data: profile, error } = await supabase
-  //   .from("profiles")
-  //   .select("id, name, department_id, profile_image, interested_fields, scraped_senior_ids, scraped_course_ids")
-  //   .eq("id", user.id)
-  //   .single();
-  // if (error) throw error;
-  //
-  // return {
-  //   id: profile.id,
-  //   name: profile.name,
-  //   email: user.email!,
-  //   departmentId: profile.department_id,   // ← 커리큘럼 연동의 핵심
-  //   interestedFields: profile.interested_fields ?? [],
-  //   profileImage: profile.profile_image ?? null,
-  //   courses: [],
-  //   scrapedSeniorIds: profile.scraped_senior_ids ?? [],
-  //   scrapedCourseIds: profile.scraped_course_ids ?? [],
-  // };
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 }
 
 // ──────────────────────────────────────────────────────────────
