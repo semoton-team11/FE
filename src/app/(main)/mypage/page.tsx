@@ -112,13 +112,7 @@ export default function MyPage() {
     .filter((f) => user.interestedFields.includes(f.id))
     .map((f) => f.name);
 
-<<<<<<< HEAD
   const deptName = departments.find((d) => d.id === user.department)?.name ?? "";
-=======
-  // user.departmentId를 departments에서 이름으로 변환
-  // ProfileSection에서 "학과 N학년" 형태로 표시됨
-  const deptName = departments.find((d) => d.id === user.departmentId)?.name ?? "";
->>>>>>> bbda612 (fix:update)
 
   return (
     <div style={pageStyle}>

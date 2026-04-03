@@ -9,7 +9,7 @@ interface GraduationStatusCardProps {
   plannedByType: Record<CategoryType, number>;
   reqByType: Record<CategoryType, number>;
   // containerRef: 스크롤 시 sticky div의 bottom 위치를 page.tsx에서 추적하기 위한 ref
-  containerRef?: React.RefObject<HTMLDivElement>;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function GraduationStatusCard({

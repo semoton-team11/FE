@@ -69,18 +69,8 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 export async function getCurrentUser(): Promise<User> {
   // localStorage에서 로그인 시 저장된 JWT 토큰을 확인한다.
   const token = localStorage.getItem("access_token");
-<<<<<<< HEAD
   const userId = localStorage.getItem("user_id");
   if (!token) throw new Error("로그인이 필요합니다.");
-=======
-
-  if (!token) {
-    // 토큰이 없으면 비로그인 상태 → 개발/디자인 리뷰용 목업 사용자를 반환한다.
-    // user_name_override: 프로필 설정에서 저장한 이름이 있으면 덮어쓴다.
-    const nameOverride = localStorage.getItem("user_name_override");
-    return nameOverride ? { ...MOCK_USER, name: nameOverride } : MOCK_USER;
-  }
->>>>>>> bbda612 (fix:update)
 
   try {
     const response = await fetch(`${API_URL}/profile/${userId}`, {
@@ -97,7 +87,6 @@ export async function getCurrentUser(): Promise<User> {
       throw new Error(result.message || "사용자 정보를 가져오는데 실패했습니다.");
     }
 
-<<<<<<< HEAD
     return {
       id: result.id,
       name: result.name,
@@ -112,25 +101,6 @@ export async function getCurrentUser(): Promise<User> {
       courses: MOCK_USER.courses,
       scrapedSeniorIds: MOCK_USER.scrapedSeniorIds,
       scrapedCourseIds: MOCK_USER.scrapedCourseIds,
-=======
-    const userData = result.data;
-    // user_metadata는 Supabase Auth의 커스텀 필드가 담기는 객체다.
-    const meta = userData.user_metadata;
-
-    // 백엔드 응답 필드를 FE User 타입에 맞게 매핑한다.
-    // 각 필드가 없을 경우 MOCK_USER의 해당 필드를 폴백으로 사용한다.
-    return {
-      id: userData?.id || MOCK_USER.id,
-      // user_name_override: 프로필 설정에서 저장한 이름 우선 적용
-      name: localStorage.getItem("user_name_override") || meta?.name || MOCK_USER.name,
-      email: userData?.email || MOCK_USER.email,
-      departmentId: meta?.department || MOCK_USER.departmentId, // ★ 커리큘럼 필터의 핵심 값
-      interestedFields: meta?.interested_fields ?? MOCK_USER.interestedFields,
-      profileImage: meta?.profile_image ?? MOCK_USER.profileImage,
-      courses: MOCK_USER.courses, // 현재 courses는 별도 API로 조회하므로 여기서는 MOCK 사용
-      scrapedSeniorIds: meta?.scraped_senior_ids ?? MOCK_USER.scrapedSeniorIds,
-      scrapedCourseIds: meta?.scraped_course_ids ?? MOCK_USER.scrapedCourseIds,
->>>>>>> bbda612 (fix:update)
     };
   } catch (error) {
     console.error("getCurrentUser Error:", error);

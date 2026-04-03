@@ -87,11 +87,7 @@ export type CatalogCourse = {
   credits: number;
   code: string;          // 과목 코드 (예: "FD101", "ID3012")
   type: CourseType;
-<<<<<<< HEAD
   department: string;
-=======
-  departmentId: string;  // 이 과목을 제공하는 학과 ID
->>>>>>> bbda612 (fix:update)
 };
 
 /** 학과별 졸업 요건 (각 카테고리별 최소 이수 학점) */
@@ -245,7 +241,6 @@ export type User = {
   id: string;
   name: string;
   email: string;
-<<<<<<< HEAD
   department: string;
   student_id: number;
   created_at: string;
@@ -256,12 +251,4 @@ export type User = {
   courses: Course[];           // 내가 수강한 과목들
   scrapedSeniorIds: string[];
   scrapedCourseIds: string[];
-=======
-  departmentId: string;          // 소속 학과 ID (Department.id 참조)
-  interestedFields: string[];    // 관심 분야 ID 목록 (Field.id 참조)
-  profileImage: string | null;   // 프로필 이미지 경로 (없으면 기본 아바타)
-  courses: Course[];             // 수강 완료/수강 중인 과목 목록 (커리큘럼 계산에 사용)
-  scrapedSeniorIds: string[];    // 스크랩(찜)한 선배 ID 목록
-  scrapedCourseIds: string[];    // 스크랩한 과목 ID 목록
->>>>>>> bbda612 (fix:update)
 };

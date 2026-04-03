@@ -165,7 +165,7 @@ type RecommendedSeniorCardProps = {
   onDragEnd: (clientX: number) => void;
   isZeroState?: boolean;
   // wheel 이벤트 리스너 등록용 ref — wrapper div 없이 직접 연결
-  containerRef?: React.RefObject<HTMLDivElement>;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 function ZeroStateSection() {

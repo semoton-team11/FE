@@ -97,13 +97,8 @@ export default function CurriculumPage() {
           id: c.id || c.course_id,
           name: c.name || c.course_name,
           type: c.type || c.course_type,
-<<<<<<< HEAD
           credits: c.credits, 
           department: c.dept_name || "",
-=======
-          credits: c.credits,
-          departmentId: c.dept_name || "",
->>>>>>> bbda612 (fix:update)
           code: c.code || c.course_id
         }));
 

@@ -106,13 +106,8 @@ function SeniorsPageInner() {
     if (!deptName) { setSeniors([]); return; }
     // 학과 이름으로 ID를 역조회하여 API에 전달
     const dept = departments.find((d) => d.name === deptName);
-<<<<<<< HEAD
     getSeniors({ departmentId: deptName }).then(setSeniors);
   }, [deptName, departments]);
-=======
-    getSeniors({ departmentId: dept?.id }).then(setSeniors);
-  }, [deptName, departments]); // deptName 또는 departments가 변경될 때 재실행
->>>>>>> bbda612 (fix:update)
 
   return (
     <div style={pageWrapperStyle}>

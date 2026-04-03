@@ -24,7 +24,6 @@
 
 // ── React 훅 ──────────────────────────────────────────────────────────────────
 import { useEffect, useRef, useState } from "react";
-<<<<<<< HEAD
 import { getCurrentUser } from "@/services/user";
 import { MOCK_USER } from "@/mock";
 import { getPlannedCourses, getCatalogCourses, getCheckedCourses, getCurriculumRequirement, getCurriculumStatus } from "@/services/curriculum";
@@ -36,32 +35,7 @@ import PriorityCoursesCard from "./_components/PriorityCoursesCard";
 import RecommendedSeniorCard from "./_components/RecommendedSeniorCard";
 import RecentActivities from "./_components/RecentActivities";
 import HomeFooter from "./_components/HomeFooter";
-=======
->>>>>>> bbda612 (fix:update)
 
-// ── 서비스: 유저 정보 ─────────────────────────────────────────────────────────
-import { getCurrentUser } from "@/services/user";
-
-// ── 목 데이터: API 실패 시 대체 유저 ─────────────────────────────────────────
-import { MOCK_USER } from "@/mock";
-
-// ── 서비스: 커리큘럼 관련 API ─────────────────────────────────────────────────
-import { getPlannedCourses, getCatalogCourses, getCheckedCourses, getCurriculumRequirement } from "@/services/curriculum";
-
-// ── 서비스: 선배(멘토) 목록 조회 ──────────────────────────────────────────────
-import { getSeniors } from "@/services/seniors";
-
-// ── 타입 정의 ─────────────────────────────────────────────────────────────────
-import type { User, CurriculumStatus, Senior, CatalogCourse } from "@/types";
-
-// ── UI 컴포넌트: 뱃지 (학기 표시용) ──────────────────────────────────────────
-import { Badge } from "@/components/ui/badge";
-
-// ── 홈 전용 하위 컴포넌트들 ────────────────────────────────────────────────────
-import AcademicStatusCard from "./_components/AcademicStatusCard";     // 학업 현황 카드
-import PriorityCoursesCard from "./_components/PriorityCoursesCard";   // 커리큘럼 계획 카드
-import RecommendedSeniorCard from "./_components/RecommendedSeniorCard"; // 추천 선배 카드
-import RecentActivities from "./_components/RecentActivities";          // 최근 활동 목록
 
 /**
  * HomePage
@@ -104,7 +78,6 @@ export default function HomePage() {
     // getCurrentUser 실패 시 MOCK_USER로 폴백하여 개발 환경에서도 동작
     getCurrentUser().catch(() => MOCK_USER).then(async (u) => {
       setUser(u);
-<<<<<<< HEAD
       const [fetchedSeniors, checkedIds, plannedIds, catalog, req, calcStatus] = await Promise.all([
         getSeniors({ departmentId: u.department }),
         getCheckedCourses(u.id),
@@ -112,16 +85,6 @@ export default function HomePage() {
         getCatalogCourses().catch(() => []),
         getCurriculumRequirement().catch(() => null),
         getCurriculumStatus(u.id)
-=======
-
-      // 6개 API를 병렬로 호출하여 초기 로딩 시간 최소화
-      const [fetchedSeniors, checkedIds, plannedIds, catalog, req] = await Promise.all([
-        getSeniors({ departmentId: u.departmentId }),  // 같은 학과 선배 목록
-        getCheckedCourses(u.id),                        // 이수 완료(체크)한 과목 ID Set
-        getPlannedCourses(u.id),                        // 계획에 추가된 과목 ID Set
-        getCatalogCourses().catch(() => []),             // 전체 과목 카탈로그 (실패 시 빈 배열)
-        getCurriculumRequirement().catch(() => null),    // 졸업 요건 학점 (실패 시 null)
->>>>>>> bbda612 (fix:update)
       ]);
 
       setSeniors(fetchedSeniors);
@@ -130,12 +93,10 @@ export default function HomePage() {
       // plannedIds Set에 포함된 과목만 필터링
       setCheckedCourses(catalog.filter((c) => plannedIds.has(c.id)));
 
-      // 학업 현황 카드: 체크된 과목으로 수료율 직접 계산
-<<<<<<< HEAD
+      // 학업 현황 카드: API 결과 우선, 없으면 로컬 계산으로 폴백
       if (calcStatus) {
         setStatus(calcStatus);
-=======
-      if (req) {
+      } else if (req) {
         // 특정 과목 유형(type) 중 이수된 과목들의 학점 합산 헬퍼
         const sum = (type: string) =>
           catalog.filter(c => c.type === type && checkedIds.has(c.id))
@@ -146,7 +107,6 @@ export default function HomePage() {
           required: { total: req.required, completed: sum("전공필수") },
           elective: { total: req.elective, completed: sum("전공선택") },
         });
->>>>>>> bbda612 (fix:update)
       }
     });
   }, []); // 마운트 시 1회만 실행

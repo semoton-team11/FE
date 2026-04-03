@@ -31,7 +31,6 @@ export const MOCK_USER: User = {
   id: "user-1",
   name: "이연수",
   email: "yeonsu@khu.ac.kr",
-<<<<<<< HEAD
   department: "dept-5", // 산업디자인학과
   student_id: 2022110182,
   created_at: "2025.04.01",
@@ -39,12 +38,6 @@ export const MOCK_USER: User = {
   grade: 3,
   interestedFields: ["field-5", "field-6"],
   profileImage: null,
-=======
-  departmentId: "dept-5", // 산업디자인학과 (organization.ts의 MOCK_DEPARTMENTS 참조)
-  interestedFields: ["field-5", "field-6"], // UX/UI 디자인, 공간/인테리어 디자인 관심
-  profileImage: null, // 프로필 이미지 없음 → 기본 아이콘 아바타 사용
-  // 수강 완료 및 수강 중인 과목 목록 (커리큘럼 계산기에서 이수 학점 계산에 사용)
->>>>>>> bbda612 (fix:update)
   courses: [
     { id: "u-c-1", name: "자료구조",       credits: 3, type: "전공필수", semester: "2023-1", grade: "A+" },
     { id: "u-c-2", name: "알고리즘",       credits: 3, type: "전공필수", semester: "2023-2", grade: "A0" },

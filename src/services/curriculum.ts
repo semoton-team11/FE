@@ -244,20 +244,12 @@ export async function getCurriculumStatus(
  * @returns {Promise<CatalogCourse[]>} 학과 개설 과목 전체 목록
  */
 export async function getCatalogCourses(): Promise<CatalogCourse[]> {
-<<<<<<< HEAD
   const response = await apiRequest(`/curriculum/courses`); 
   
   const rawData = (response as any).data || response;
 
   if (!Array.isArray(rawData)) {
     return [];
-=======
-  try {
-    return await apiRequest<CatalogCourse[]>(`/curriculum/courses`);
-  } catch {
-    // API 미연결 또는 에러 시 개발용 목업 데이터로 폴백한다.
-    return MOCK_CATALOG_COURSES;
->>>>>>> bbda612 (fix:update)
   }
 
   return rawData.map((course: any) => ({

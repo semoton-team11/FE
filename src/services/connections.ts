@@ -158,15 +158,9 @@
 // ╚══════════════════════════════════════════════════════════════════════════════╝
 
 import type { ConnectionRequest, Message } from "@/types";
-<<<<<<< HEAD
-import { MOCK_CONNECTIONS, MOCK_MESSAGES } from "@/mock";
-//import { supabase } from "@/lib/supabase";
-
-=======
 import { MOCK_CONNECTIONS, MOCK_MESSAGES } from "@/mock"; // 연동 완료 후 삭제 예정 (STEP 8)
 import { supabase } from "@/lib/supabase";               // Supabase 클라이언트 (src/lib/supabase.ts)
 import { apiRequest } from "@/lib/api";                  // 인증 헤더 포함 REST API 래퍼 (src/lib/api.ts)
->>>>>>> bbda612 (fix:update)
 
 // ── 타입 변환 헬퍼 ────────────────────────────────────────────────────────────
 

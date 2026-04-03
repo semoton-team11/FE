@@ -69,14 +69,8 @@ export default function CurriculumSummaryPage() {
       setUserId(user.id);
       // 과목 카탈로그와 졸업 요건을 병렬 로드
       const [courses, req] = await Promise.all([
-<<<<<<< HEAD
         getCatalogCourses(),
         getCurriculumRequirement(),
-=======
-        // departmentId를 전달하여 해당 학과 과목만 조회
-        getCatalogCourses(user.departmentId),
-        getCurriculumRequirement(user.departmentId, user.id),
->>>>>>> bbda612 (fix:update)
       ]);
       setCatalog(courses);
       setRequirement(req);
