@@ -302,7 +302,11 @@ export async function getMessages(connectionId: string): Promise<Message[]> {
       .eq("connection_id", connectionId) // 해당 연결의 메시지만 필터링
       .order("created_at", { ascending: true }); // 오래된 메시지부터 정렬
     if (error) throw error;
-    return (data ?? []).map(toMessage); // snake_case → camelCase 변환
+    // Supabase가 빈 배열 반환 시 mock fallback
+    if (data && data.length > 0) return data.map(toMessage);
+    const mock = MOCK_MESSAGES.filter((m) => m.connectionId === connectionId);
+    if (mock.length > 0) return mock;
+    return [];
   } catch {
     // ★ Supabase 미연결 또는 RLS 차단 시 mock 데이터로 폴백
     //    연동 완료 후 이 catch 블록 전체 삭제 (STEP 8)

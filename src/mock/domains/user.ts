@@ -103,7 +103,7 @@ export const MOCK_MESSAGES: Message[] = [
     id: "msg-2",
     connectionId: "conn-2",
     senderId: "senior-2",     // 선배의 응답 (마지막 메시지 → 사이드바 미리보기에 표시)
-    content: "다음 주 화요일 예대 1층 어떠신가요?",
+    content: "다음 주 화요일 예디대 1층 어떠신가요?",
     createdAt: "2024-03-15T15:00:00Z",
   },
 

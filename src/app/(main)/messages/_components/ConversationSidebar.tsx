@@ -95,13 +95,15 @@ const emptyTextStyle: React.CSSProperties = {
 const connBtnStyle = (isSelected: boolean): React.CSSProperties => ({
   width: "100%",
   textAlign: "left",
-  padding: "12px 16px",
+  padding: "14px 20px",
   display: "flex",
   alignItems: "center",
   gap: "12px",
-  backgroundColor: isSelected ? "#F6EBEB" : "transparent",
+  backgroundColor: isSelected ? "#FFF5F5" : "transparent",
   border: "none",
-  borderRadius: isSelected ? "12px" : "0",
+  borderLeft: isSelected ? "3px solid #9A001F" : "3px solid transparent",
+  borderBottom: "1px solid #F5EFEF",
+  borderRadius: "0",
   cursor: "pointer",
   transition: "background-color 150ms ease",
 });
@@ -137,18 +139,21 @@ const connNameRowStyle: React.CSSProperties = {
   alignItems: "center",
 };
 
-// 선배 이름 텍스트 스타일
-const connNameStyle: React.CSSProperties = {
+const connNameStyle = (isSelected: boolean): React.CSSProperties => ({
   fontSize: "14px",
-  fontWeight: 600,
+  fontWeight: isSelected ? 700 : 400,
   color: "#1F1A1A",
-};
+});
 
-// 마지막 메시지 시간 표시 (현재는 "어제" 하드코딩)
 const connTimeStyle: React.CSSProperties = {
   fontSize: "11px",
-  color: "#9CA3AF",
+  color: "#5C3F3F",
   flexShrink: 0,
+};
+
+const MOCK_TIMESTAMPS: Record<string, string> = {
+  "conn-2": "10:30 AM",
+  "conn-3": "어제",
 };
 
 /**
@@ -157,13 +162,13 @@ const connTimeStyle: React.CSSProperties = {
  *
  * @param hasUnread - 읽지 않은 메시지 존재 여부
  */
-const connPreviewStyle = (hasUnread: boolean): React.CSSProperties => ({
+const connPreviewStyle = (hasUnread: boolean, isSelected: boolean): React.CSSProperties => ({
   fontSize: "12px",
-  // 읽지 않은 메시지: 진한 포도주색 / 읽은 메시지: 회색
-  color: hasUnread ? "#5C3F3F" : "#9CA3AF",
+  color: isSelected ? "#5C3F3F" : hasUnread ? "#5C3F3F" : "#9CA3AF",
+  fontWeight: isSelected ? 600 : 400,
   marginTop: "3px",
   overflow: "hidden",
-  textOverflow: "ellipsis",  // 긴 메시지 말줄임 처리
+  textOverflow: "ellipsis",
   whiteSpace: "nowrap",
 });
 
@@ -235,7 +240,7 @@ export default function ConversationSidebar({
           // 검색 결과 없거나 연결된 선배 없을 때 안내 문구
           <p style={emptyTextStyle}>대화가 없습니다.</p>
         ) : (
-          <div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
           {filteredConns.map((conn) => {
             // O(1) 룩업으로 연결 요청의 선배 정보 조회
             const senior = seniorMap[conn.toSeniorId];
@@ -283,15 +288,15 @@ export default function ConversationSidebar({
                 <div style={connInfoStyle}>
                   <div style={connNameRowStyle}>
                     {/* 이름 없으면 폴백 "선배님" 표시 */}
-                    <p style={connNameStyle}>{senior?.name ?? "선배님"} 선배님</p>
+                    <p style={connNameStyle(isSelected)}>{senior?.name ?? ""} 선배님</p>
                     {/* TODO: 실제 타임스탬프 포맷팅으로 교체 */}
-                    <span style={connTimeStyle}>어제</span>
+                    <span style={connTimeStyle}>{MOCK_TIMESTAMPS[conn.id] ?? "어제"}</span>
                   </div>
                   {/* 마지막 메시지 미리보기:
                       - 메시지 있음 + 본인 발신: "회원님: [내용]"
                       - 메시지 있음 + 상대 발신: "[내용]"
                       - 메시지 없음: 최초 연결 요청 메시지 표시 */}
-                  <p style={connPreviewStyle(hasUnread)}>
+                  <p style={connPreviewStyle(hasUnread, isSelected)}>
                     {lastMsg
                       ? lastMsg.senderId === CURRENT_USER_ID
                         ? `회원님: ${lastMsg.content}`

@@ -183,7 +183,7 @@ function DropdownRow({ label, value, options, isOpen, onToggle, onSelect }: Drop
           alignItems: "center",
           padding: "20px 0",
           cursor: "pointer",
-          borderBottom: "1.5px solid #F3B8B8",
+          borderBottom: "2px solid #F3B8B8",
           userSelect: "none",
         }}
       >
@@ -285,9 +285,9 @@ export function CoffeeChatModal({ seniorName, onClose }: CoffeeChatModalProps) {
       <div style={{
         backgroundColor: "#FFFFFF",
         borderRadius: "24px",
-        padding: "32px 40px 36px",
+        padding: "32px 40px 45px",
         width: "800px",
-        height: "800px",
+        height: "650px",
         maxWidth: "90vw",
         maxHeight: "90vh",
         boxShadow: "0 8px 40px rgba(0,0,0,0.15)",
@@ -298,13 +298,13 @@ export function CoffeeChatModal({ seniorName, onClose }: CoffeeChatModalProps) {
           onClick={onClose}
           style={{ background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: "20px", display: "block" }}
         >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg width="45" height="45" viewBox="0 0 24 24" fill="none">
             <path d="M18 6L6 18M6 6L18 18" stroke="#9A001F" strokeWidth="2.5" strokeLinecap="round" />
           </svg>
         </button>
 
         {/* 모달 제목: seniorName prop → "[이름] 선배님과 커피챗" */}
-        <h2 style={{ fontSize: "24px", fontWeight: 700, color: "#1F1A1A", marginBottom: "8px" }}>
+        <h2 style={{ fontSize: "30px", fontWeight: 700, color: "#1F1A1A", marginBottom: "8px" }}>
           {seniorName} 선배님과 커피챗
         </h2>
 
@@ -393,7 +393,10 @@ function AcceptedForm({ input, isSending, onInputChange, onSubmit, onCoffeeChatO
           style={plusButtonStyle}
           onClick={() => setShowAttach((prev) => !prev)}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            style={{ transition: "transform 200ms ease", transform: showAttach ? "rotate(45deg)" : "rotate(0deg)" }}
+          >
             <path d="M12 5V19" stroke="#9A001F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M5 12H19" stroke="#9A001F" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -422,9 +425,16 @@ function AcceptedForm({ input, isSending, onInputChange, onSubmit, onCoffeeChatO
         </button>
       </form>
 
-      {/* 첨부 패널: + 버튼 클릭 시 표시 */}
-      {showAttach && (
-        <div style={attachPanelStyle}>
+      {/* 첨부 패널: + 버튼 클릭 시 슬라이드 업 */}
+      <div style={{
+        ...attachPanelStyle,
+        maxHeight: showAttach ? "120px" : "0",
+        opacity: showAttach ? 1 : 0,
+        overflow: "hidden",
+        paddingTop: showAttach ? "16px" : "0",
+        paddingBottom: showAttach ? "4px" : "0",
+        transition: "max-height 250ms ease, opacity 200ms ease, padding 250ms ease",
+      }}>
           {/* 파일 버튼: 현재 UI만 구현, 실제 업로드 기능은 미연동 */}
           <button type="button" style={attachItemStyle}>
             <div style={attachIconWrapStyle}>
@@ -460,8 +470,7 @@ function AcceptedForm({ input, isSending, onInputChange, onSubmit, onCoffeeChatO
             </div>
             <span style={attachLabelStyle}>커피챗</span>
           </button>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

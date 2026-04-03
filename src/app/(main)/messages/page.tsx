@@ -240,7 +240,7 @@ function MessagesPageInner() {
   const sidebarConns = connections.filter((conn) => {
     const hasMsg = Boolean(lastMessageMap[conn.id]);
     const senior = seniorMap[conn.toSeniorId];
-    const matchSearch = senior?.name.includes(search) ?? true;
+    const matchSearch = !search.trim() || (senior?.name.includes(search) ?? false);
     return hasMsg && matchSearch;
   });
 
@@ -251,6 +251,7 @@ function MessagesPageInner() {
     <div style={pageLayoutStyle}>
       {/* 왼쪽: 대화 목록 사이드바
           props: filteredConns(필터된 연결 목록), seniorMap, lastMessageMap, readSet, search */}
+      {/* 검색 중이 아닐 때: 일반 대화 목록 사이드바 */}
       {!search.trim() && (
         <ConversationSidebar
           filteredConns={sidebarConns}
@@ -267,10 +268,10 @@ function MessagesPageInner() {
         />
       )}
 
-      {/* 검색 중일 때 검색창 + 결과 패널 */}
+      {/* 검색 중일 때: 검색창 + 결과 패널 */}
       {search.trim() && (
         <div style={{ width: "280px", flexShrink: 0, backgroundColor: "#FFFFFF", borderRight: "1px solid #F0EDED", display: "flex", flexDirection: "column" }}>
-          <div style={{ padding: "28px 20px 14px" }}>
+          <div style={{ padding: "28px 20px 8px" }}>
             <h2 style={{ fontSize: "20px", fontWeight: 500, color: "#1F1A1A", marginBottom: "14px" }}>메시지</h2>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", border: "1.5px solid #EBE0E0", borderRadius: "10px", padding: "10px 14px", backgroundColor: "#FCF1F1" }}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -280,7 +281,6 @@ function MessagesPageInner() {
                 className="msg-search-input"
                 placeholder="대화 검색..."
                 value={search}
-                autoFocus
                 onChange={(e) => setSearch(e.target.value)}
                 style={{ background: "none", border: "none", outline: "none", fontSize: "13px", color: "#5C3F3F", width: "100%" }}
               />
@@ -288,24 +288,24 @@ function MessagesPageInner() {
             </div>
           </div>
           <div style={{ flex: 1, overflowY: "auto", padding: "4px 8px", display: "flex", flexDirection: "column", gap: "2px" }}>
-            {sidebarConns.length === 0 ? (
-              <p style={{ padding: "16px 20px", fontSize: "13px", color: "#9A001F" }}>일치하는 대화가 없습니다</p>
+            {search.trim().length < 2 ? null : sidebarConns.length === 0 ? (
+              <p style={{ padding: "0 20px", fontSize: "11px", color: "#9A001F" }}>일치하는 대화가 없습니다</p>
             ) : sidebarConns.map((conn) => {
               const senior = seniorMap[conn.toSeniorId];
               return (
                 <button
                   key={conn.id}
                   onClick={() => { setSelectedConn(conn); setReadSet((prev) => new Set([...prev, conn.id])); setSearch(""); }}
-                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px", backgroundColor: "transparent", border: "none", borderRadius: "12px", cursor: "pointer" }}
+                  style={{ width: "100%", textAlign: "left", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px", backgroundColor: "transparent", border: "none", borderBottom: "1px solid #F0EDED", borderRadius: "0", cursor: "pointer" }}
                 >
                   <div style={{ width: "46px", height: "46px", borderRadius: "14px", backgroundColor: "#F5D0D0", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
                     {senior?.profileImage
                       ? <img src={senior.profileImage} alt={senior.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <span style={{ fontSize: "16px", fontWeight: 700, color: "#9A001F" }}>{senior?.name?.[0] ?? "?"}</span>
+                      : <span style={{ fontSize: "16px", fontWeight: 700, color: "#9A001F" }}>{senior?.name?.[0] ?? ""}</span>
                     }
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: "14px", fontWeight: 600, color: "#1F1A1A" }}>{senior?.name ?? "선배님"} 선배님</p>
+                    <p style={{ fontSize: "14px", fontWeight: 600, color: "#1F1A1A" }}>{senior?.name ?? ""} 선배님</p>
                     <p style={{ fontSize: "12px", color: "#9CA3AF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{senior?.jobTitle ?? ""}</p>
                   </div>
                 </button>

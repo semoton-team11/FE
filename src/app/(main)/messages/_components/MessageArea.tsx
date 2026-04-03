@@ -114,9 +114,10 @@ function getBubbleStyle(isMine: boolean): React.CSSProperties {
     padding: "10px 16px",
     borderRadius: isMine ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
     fontSize: "14px",
-    backgroundColor: isMine ? "#9A001F" : "#E6BDBB4D",
-    color: isMine ? "#FFFFFF" : "#1F1A1A",
-    boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+    backgroundColor: isMine ? "#FFFFFF" : "#FCF1F1",
+    color: "#1F1A1A",
+    border: "1.5px solid #EBE0E0",
+    boxShadow: "none",
   };
 }
 

@@ -101,29 +101,33 @@ export async function getSeniors(filters?: {
 
 // GET /seniors/{senior_id}
 export async function getSeniorById(id: string): Promise<Senior | null> {
-  const res = await fetch(`${API_URL}/seniors/${id}`, {
-    method: "GET",
-    headers: getHeaders(),
-  });
+  try {
+    const res = await fetch(`${API_URL}/seniors/${id}`, {
+      method: "GET",
+      headers: getHeaders(),
+    });
 
-  if (!res.ok) return null;
+    if (!res.ok) throw new Error("not found");
 
-  const result = await res.json();
-
-  const s = result.data;
-  return {
-    id: s.id,
-    name: s.name,
-    departmentId: s.department,
-    department: s.department,
-    graduationYear: s.graduated_year,
-    company: s.company ?? "",
-    jobTitle: s.job_title ?? "",
-    skills: s.skills ?? [],
-    profileImage: s.profile_image ?? null,
-    bio: s.bio ?? "",
-    tips: s.tips ?? "",
-    timetable: [],
-    isAvailable: s.is_available ?? false,
-  };
+    const result = await res.json();
+    const s = result.data;
+    return {
+      id: s.id,
+      name: s.name,
+      departmentId: s.department,
+      department: s.department,
+      graduationYear: s.graduated_year,
+      company: s.company ?? "",
+      jobTitle: s.job_title ?? "",
+      skills: s.skills ?? [],
+      profileImage: s.profile_image ?? null,
+      bio: s.bio ?? "",
+      tips: s.tips ?? "",
+      timetable: [],
+      isAvailable: s.is_available ?? false,
+    };
+  } catch {
+    // API 실패 시 mock fallback
+    return MOCK_SENIORS.find((s) => s.id === id) ?? null;
+  }
 }
