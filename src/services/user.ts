@@ -1,3 +1,34 @@
+/**
+ * @file src/services/user.ts
+ * @description 사용자 프로필 서비스 — 현재 사용자 조회, 관심 분야 업데이트, 선배 스크랩
+ *
+ * 역할:
+ *  - 로그인한 사용자의 프로필 정보를 백엔드에서 가져온다.
+ *  - 관심 분야 목록과 스크랩한 선배 목록을 업데이트한다.
+ *  - 현재 REST API(getCurrentUser)와 MOCK(updateUserFields, toggleScrapSenior)이 혼재한다.
+ *
+ * ★ 중요:
+ *  getCurrentUser()가 반환하는 User.departmentId 값이
+ *  getCatalogCourses()의 학과 필터 키로 사용된다.
+ *  이 값이 잘못되면 다른 학과 과목이 노출되므로 반드시 정확히 매핑해야 한다.
+ *
+ * Export:
+ *  - getCurrentUser      — 현재 로그인 사용자 정보 반환
+ *  - updateUserFields    — 관심 분야 목록 업데이트
+ *  - toggleScrapSenior   — 선배 스크랩 추가/해제
+ *
+ * 사용처:
+ *  - src/app/(main)/page.tsx (홈 화면 사용자 정보 표시)
+ *  - src/app/(main)/curriculum/ (커리큘럼 계산기)
+ *  - src/app/(main)/messages/ (채팅)
+ *  - 마이페이지, 온보딩 등
+ */
+
+// @/types — 프로젝트 공통 타입 정의 파일에서 User 타입을 가져온다.
+import type { User } from "@/types"; // 사용자 프로필 타입
+// @/mock — 백엔드 미연결 시 사용할 목업 사용자 데이터
+import { MOCK_USER } from "@/mock"; // 개발/디자인 리뷰용 목업 사용자
+
 // ╔══════════════════════════════════════════════════════════════╗
 // ║  서비스: 유저 (user)                                          ║
 // ║  현재 모드 : MOCK                                             ║
@@ -12,9 +43,7 @@
 // ║  회원가입 시 저장된 department_id 를 반드시 그대로 읽어야 함.  ║
 // ╚══════════════════════════════════════════════════════════════╝
 
-import type { User } from "@/types";
-import { MOCK_USER } from "@/mock";
-
+// 백엔드 API 서버 주소. .env.local의 값이 없으면 로컬 개발 서버를 사용한다.
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 
 // import { supabase } from "@/lib/supabase";
@@ -24,16 +53,40 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 // DB 테이블 : profiles  (+ auth.users for email)
 // ★ 반환값의 departmentId → getCatalogCourses() 에 전달
 // ──────────────────────────────────────────────────────────────
+/**
+ * 현재 로그인한 사용자의 프로필 정보를 반환한다.
+ *
+ * - localStorage에 access_token이 없으면 MOCK_USER를 반환한다 (비로그인 개발 모드).
+ * - token이 있으면 GET /auth/me를 호출해 실제 사용자 정보를 가져온다.
+ * - 백엔드 응답의 user_metadata를 FE User 타입으로 매핑한다.
+ *
+ * ★ 반환값의 departmentId가 curriculum.ts의 getCatalogCourses()에 전달되므로
+ *    이 값이 반드시 올바르게 채워져야 한다.
+ *
+ * @returns {Promise<User>} 현재 사용자 프로필 (비로그인 시 MOCK_USER)
+ * @throws {Error} API 호출 실패 시
+ */
 export async function getCurrentUser(): Promise<User> {
+  // localStorage에서 로그인 시 저장된 JWT 토큰을 확인한다.
   const token = localStorage.getItem("access_token");
+<<<<<<< HEAD
   const userId = localStorage.getItem("user_id");
   if (!token) throw new Error("로그인이 필요합니다.");
+=======
+
+  if (!token) {
+    // 토큰이 없으면 비로그인 상태 → 개발/디자인 리뷰용 목업 사용자를 반환한다.
+    // user_name_override: 프로필 설정에서 저장한 이름이 있으면 덮어쓴다.
+    const nameOverride = localStorage.getItem("user_name_override");
+    return nameOverride ? { ...MOCK_USER, name: nameOverride } : MOCK_USER;
+  }
+>>>>>>> bbda612 (fix:update)
 
   try {
     const response = await fetch(`${API_URL}/profile/${userId}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        "Authorization": `Bearer ${token}`, // JWT 토큰으로 사용자 식별
         "Content-Type": "application/json",
       },
     });
@@ -44,6 +97,7 @@ export async function getCurrentUser(): Promise<User> {
       throw new Error(result.message || "사용자 정보를 가져오는데 실패했습니다.");
     }
 
+<<<<<<< HEAD
     return {
       id: result.id,
       name: result.name,
@@ -58,6 +112,25 @@ export async function getCurrentUser(): Promise<User> {
       courses: MOCK_USER.courses,
       scrapedSeniorIds: MOCK_USER.scrapedSeniorIds,
       scrapedCourseIds: MOCK_USER.scrapedCourseIds,
+=======
+    const userData = result.data;
+    // user_metadata는 Supabase Auth의 커스텀 필드가 담기는 객체다.
+    const meta = userData.user_metadata;
+
+    // 백엔드 응답 필드를 FE User 타입에 맞게 매핑한다.
+    // 각 필드가 없을 경우 MOCK_USER의 해당 필드를 폴백으로 사용한다.
+    return {
+      id: userData?.id || MOCK_USER.id,
+      // user_name_override: 프로필 설정에서 저장한 이름 우선 적용
+      name: localStorage.getItem("user_name_override") || meta?.name || MOCK_USER.name,
+      email: userData?.email || MOCK_USER.email,
+      departmentId: meta?.department || MOCK_USER.departmentId, // ★ 커리큘럼 필터의 핵심 값
+      interestedFields: meta?.interested_fields ?? MOCK_USER.interestedFields,
+      profileImage: meta?.profile_image ?? MOCK_USER.profileImage,
+      courses: MOCK_USER.courses, // 현재 courses는 별도 API로 조회하므로 여기서는 MOCK 사용
+      scrapedSeniorIds: meta?.scraped_senior_ids ?? MOCK_USER.scrapedSeniorIds,
+      scrapedCourseIds: meta?.scraped_course_ids ?? MOCK_USER.scrapedCourseIds,
+>>>>>>> bbda612 (fix:update)
     };
   } catch (error) {
     console.error("getCurrentUser Error:", error);
@@ -69,6 +142,16 @@ export async function getCurrentUser(): Promise<User> {
 // updateUserFields  — 관심 분야 목록 업데이트
 // DB 테이블 : profiles.interested_fields (text[])
 // ──────────────────────────────────────────────────────────────
+/**
+ * 사용자의 관심 분야 목록을 업데이트한다.
+ *
+ * 현재 MOCK 상태 (no-op).
+ * Supabase 연동 시 profiles.interested_fields 컬럼을 업데이트한다.
+ *
+ * @param {string}   userId          업데이트할 사용자 ID
+ * @param {string[]} interestedFields 새로운 관심 분야 목록
+ * @returns {Promise<void>}
+ */
 export async function updateUserFields(
   userId: string,
   interestedFields: string[]
@@ -83,6 +166,7 @@ export async function updateUserFields(
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ━━━ MOCK (현재 사용 중 — no-op) ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // void를 사용해 미사용 변수 TypeScript 경고를 억제한다.
   void userId;
   void interestedFields;
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -92,6 +176,19 @@ export async function updateUserFields(
 // toggleScrapSenior  — 선배 스크랩 추가/해제
 // DB 테이블 : profiles.scraped_senior_ids (text[])
 // ──────────────────────────────────────────────────────────────
+/**
+ * 선배를 스크랩 목록에 추가하거나 해제한다 (토글).
+ *
+ * 현재 MOCK 상태 (no-op).
+ * Supabase 연동 시:
+ *  1. profiles.scraped_senior_ids 현재 값을 조회한다.
+ *  2. seniorId가 이미 있으면 제거, 없으면 추가한다.
+ *  3. 업데이트된 배열을 저장한다.
+ *
+ * @param {string} userId   스크랩을 변경할 사용자 ID
+ * @param {string} seniorId 스크랩 추가/해제할 선배 ID
+ * @returns {Promise<void>}
+ */
 export async function toggleScrapSenior(
   userId: string,
   seniorId: string
@@ -118,6 +215,7 @@ export async function toggleScrapSenior(
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   // ━━━ MOCK (현재 사용 중 — no-op) ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // void를 사용해 미사용 변수 TypeScript 경고를 억제한다.
   void userId;
   void seniorId;
   // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

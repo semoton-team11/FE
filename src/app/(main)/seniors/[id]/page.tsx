@@ -1,23 +1,64 @@
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║  seniors/[id]/page.tsx — 선배 상세 프로필 페이지                           ║
+// ║                                                                          ║
+// ║  역할:                                                                    ║
+// ║    특정 선배(URL 파라미터 :id)의 상세 정보를 표시하고,                       ║
+// ║    현재 사용자가 해당 선배에게 연결 요청(커피챗)을 보낼 수 있는 페이지.       ║
+// ║                                                                          ║
+// ║  데이터 흐름:                                                              ║
+// ║    URL /seniors/:id                                                       ║
+// ║      → getSeniorById(id)   → senior 상태                                  ║
+// ║      → getCurrentUser()    → currentUserId 상태                           ║
+// ║      → buildYearColumns()  → yearColumns (학년별 시간표 그룹)               ║
+// ║    연결 요청: sendConnectionRequest() → /messages?connId=xxx 이동          ║
+// ║                                                                          ║
+// ║  의존성:                                                                  ║
+// ║    - @/services/seniors      : getSeniorById                             ║
+// ║    - @/services/connections  : sendConnectionRequest                     ║
+// ║    - @/services/user         : getCurrentUser                            ║
+// ║    - @/lib/recentActivity    : 최근 방문 기록 저장                          ║
+// ║    - ProfileCard             : 좌측 프로필 카드                             ║
+// ║    - AcademicJourneyGrid     : 학업 여정 그리드                             ║
+// ║    - MentoringSchedule       : 멘토링 가능 시간 캘린더                       ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
+
 "use client";
 
+// React 훅: 상태 관리 및 사이드 이펙트
 import { useState, useEffect } from "react";
+// Next.js 훅: 동적 라우트 파라미터([id]) 읽기 및 페이지 이동
 import { useParams, useRouter } from "next/navigation";
+// 선배 단건 조회 API
 import { getSeniorById } from "@/services/seniors";
+// 연결 요청 전송 API (커피챗/멘토링 요청)
 import { sendConnectionRequest } from "@/services/connections";
+// 현재 로그인한 사용자 정보 조회
 import { getCurrentUser } from "@/services/user";
+// 타입 정의
 import type { Senior } from "@/types";
 import type { CSSProperties } from "react";
+// 좌측 프로필 카드 컴포넌트
 import ProfileCard from "./_components/ProfileCard";
+// 학업 여정 그리드 + 데이터 변환 헬퍼
 import AcademicJourneyGrid, { buildYearColumns } from "./_components/AcademicJourneyGrid";
+// 멘토링 가능 시간 캘린더 컴포넌트
 import MentoringSchedule from "./_components/MentoringSchedule";
+// 최근 방문 기록 저장 — 마이페이지 등에서 최근 본 선배 표시용
 import { addRecentActivity } from "@/lib/recentActivity";
 
+// ── 인라인 스타일 상수 ─────────────────────────────────────────────────────
+
+/** 데이터 로딩 중 표시하는 안내 텍스트 스타일 */
 const loadingStyle: CSSProperties = {
   padding: "60px",
   color: "#9CA3AF",
   fontSize: "15px",
 };
 
+/**
+ * 페이지 레이아웃 — 좌우 2열 구조
+ * 좌: ProfileCard(고정 너비) | 우: 학업 여정 + 멘토링 시간(flex 1)
+ */
 const pageLayoutStyle: CSSProperties = {
   fontFamily: "var(--font-roboto), sans-serif",
   display: "flex",
@@ -26,6 +67,7 @@ const pageLayoutStyle: CSSProperties = {
   padding: "48px 0",
 };
 
+/** 우측 패널 — 세로 방향으로 섹션들을 배치 */
 const rightPanelStyle: CSSProperties = {
   flex: 1,
   display: "flex",
@@ -33,21 +75,39 @@ const rightPanelStyle: CSSProperties = {
   gap: "48px",
 };
 
+// ── 컴포넌트 ──────────────────────────────────────────────────────────────
+
+/**
+ * SeniorDetailPage
+ *
+ * 선배 상세 페이지. URL 파라미터 id로 선배 데이터를 로드하고
+ * 프로필 / 학업 여정 / 멘토링 일정을 표시한다.
+ */
 export default function SeniorDetailPage() {
+  // URL 파라미터에서 선배 ID 추출 — /seniors/[id]
   const { id } = useParams<{ id: string }>();
+  // 연결 요청 성공 후 메시지 페이지로 이동하기 위해 사용
   const router = useRouter();
 
+  // senior: 현재 페이지에서 표시할 선배 데이터 (로딩 전 null)
   const [senior, setSenior] = useState<Senior | null>(null);
+  // isSending: 연결 요청 API 호출 중 여부 — 중복 클릭 방지 및 버튼 비활성화
   const [isSending, setIsSending] = useState(false);
+  // selectedDate: 멘토링 달력에서 선택된 날짜 숫자 (일) — null이면 미선택
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
+  // currentUserId: 로그인한 사용자 ID — 연결 요청의 fromUserId로 사용
   const [currentUserId, setCurrentUserId] = useState("");
 
   // ── 선배 데이터 로드 ──
+  // id가 변경될 때마다(페이지 재방문 등) 재실행
   useEffect(() => {
+    // 현재 사용자 ID를 미리 가져옴 (연결 요청 시 필요)
     getCurrentUser().then((u) => setCurrentUserId(u.id)).catch(() => {});
+    // 선배 상세 데이터 로드
     getSeniorById(id).then((s) => {
       setSenior(s);
       if (s) {
+        // 선배 프로필 조회 시 최근 활동 기록에 추가 (마이페이지 등에서 활용)
         addRecentActivity({
           id: `senior-${s.id}`,
           label: `${s.name} 선배님 프로필`,
@@ -57,25 +117,33 @@ export default function SeniorDetailPage() {
         });
       }
     });
-  }, [id]);
+  }, [id]); // id가 바뀌면 새로운 선배 데이터를 로드
 
+  /**
+   * handleConnect
+   *
+   * "선배와 연결하기" 버튼 클릭 핸들러.
+   * 커피챗 유형의 연결 요청을 생성하고 메시지 페이지로 이동한다.
+   */
   async function handleConnect() {
     if (!senior) return;
-    setIsSending(true);
+    setIsSending(true); // 버튼 비활성화 시작
     try {
       const newConn = await sendConnectionRequest({
         fromUserId: currentUserId,
         toSeniorId: senior.id,
-        type: "커피챗",
-        message: "안녕하세요, 연결 요청드립니다!",
-        meetingLink: undefined,
+        type: "커피챗",                       // 연결 유형 — 현재는 커피챗 고정
+        message: "안녕하세요, 연결 요청드립니다!", // 기본 메시지
+        meetingLink: undefined,               // 미팅 링크는 선택 사항
       });
+      // 연결 생성 성공 시 해당 채팅방으로 바로 이동
       router.push(`/messages?connId=${newConn.id}`);
     } finally {
-      setIsSending(false);
+      setIsSending(false); // 성공/실패 관계없이 로딩 상태 해제
     }
   }
 
+  // 데이터 로딩 중 안내 표시
   if (!senior) {
     return (
       <div style={loadingStyle}>
@@ -84,21 +152,26 @@ export default function SeniorDetailPage() {
     );
   }
 
+  // 선배의 시간표 데이터를 학년 컬럼 구조로 변환
+  // (AcademicJourneyGrid가 소비하는 형태: [{yearLabel, semesters:[{label, courses}]}])
   const yearColumns = buildYearColumns(senior.timetable);
 
   return (
     <div style={pageLayoutStyle}>
 
-      {/* ── 왼쪽: 프로필 카드 ── */}
+      {/* ── 좌측: 프로필 카드 ── */}
+      {/* ProfileCard: 사진, 이름, 직함, 한줄소개, 연결 버튼 포함 */}
       <ProfileCard
         senior={senior}
         isSending={isSending}
         onConnect={handleConnect}
       />
 
-      {/* ── 오른쪽: 학업 여정 + 멘토링 시간 ── */}
+      {/* ── 우측: 학업 여정 그리드 + 멘토링 가능 시간 ── */}
       <div style={rightPanelStyle}>
+        {/* 학년/학기별 수강 과목을 그리드로 시각화 */}
         <AcademicJourneyGrid yearColumns={yearColumns} />
+        {/* 이번 주 멘토링 가능 날짜 + 시간 슬롯 표시 */}
         <MentoringSchedule selectedDate={selectedDate} onSelectDate={setSelectedDate} />
       </div>
 

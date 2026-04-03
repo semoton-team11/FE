@@ -1,12 +1,54 @@
+/*
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  파일: src/app/(main)/roadmap/[dept]/[field]/_lib/constants.ts             ║
+║  역할: 트랙(분야)별 메타데이터 및 기본 폴백 정의                             ║
+║                                                                              ║
+║  포함 상수:                                                                  ║
+║    TrackMeta    - 트랙 메타데이터 타입                                       ║
+║    TRACK_META   - fieldId → TrackMeta 매핑 (10개 트랙 지원)                 ║
+║    DEFAULT_META - 알 수 없는 fieldId에 대한 폴백 메타데이터                  ║
+║                                                                              ║
+║  TrackMeta 필드 설명:                                                        ║
+║    title         : 페이지 좌측 패널 제목                                     ║
+║    breadcrumbField: 상단 브레드크럼에 표시되는 영문 트랙명                   ║
+║    jobDefinition : 직무 정의 텍스트 (Job Definition 섹션)                   ║
+║    coreSkills    : 핵심 기술 스택 배지 목록                                  ║
+║    dataInsights  : 선배들의 필수 강의 비율 데이터 (프로그레스 바용)           ║
+║                                                                              ║
+║  사용처:                                                                     ║
+║    - roadmap/[dept]/[field]/page.tsx : fieldId로 메타 조회                  ║
+║    - TrackLeftPanel : title, jobDefinition, coreSkills, dataInsights 표시   ║
+║    - TrackBreadcrumb : breadcrumbField 표시                                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+*/
+
+/**
+ * TrackMeta
+ *
+ * 특정 커리어 트랙(분야)의 UI 표시에 필요한 메타데이터 타입.
+ */
 export type TrackMeta = {
-  title: string;
-  breadcrumbField: string;
-  jobDefinition: string;
-  coreSkills: string[];
-  dataInsights: { label: string; percent: number }[];
+  title: string;                                     // 좌측 패널 상단 제목 (예: "UX/UI 디자인 트랙 상세 탐색")
+  breadcrumbField: string;                           // 브레드크럼 현재 위치 텍스트 (예: "UX/UI TRACK")
+  jobDefinition: string;                             // 직무 전문가에 대한 한 문장 정의
+  coreSkills: string[];                              // 핵심 기술/역량 태그 목록 (배지로 표시)
+  dataInsights: { label: string; percent: number }[]; // 선배 데이터 기반 필수 강의 비율 (프로그레스 바)
 };
 
+/**
+ * TRACK_META
+ *
+ * fieldId(슬러그)를 키로 하는 트랙 메타데이터 매핑.
+ * roadmap/[dept]/[field]/page.tsx에서 URL 파라미터 fieldId로 조회.
+ *
+ * 지원 트랙: ux-ui, space, mobility, product (산업디자인)
+ *            sw-eng, sys-prog, network (컴퓨터공학)
+ *            ml, dl, ai-ethics (인공지능)
+ *
+ * dataInsights의 percent 값은 선배들의 실제 수강 데이터를 기반으로 한 가상 수치.
+ */
 export const TRACK_META: Record<string, TrackMeta> = {
+  // ── 산업디자인학과 트랙 ─────────────────────────────────────────────────
   "ux-ui": {
     title: "UX/UI 디자인 트랙 상세 탐색",
     breadcrumbField: "UX/UI TRACK",
@@ -51,6 +93,8 @@ export const TRACK_META: Record<string, TrackMeta> = {
       { label: "스마트 제품", percent: 79 },
     ],
   },
+
+  // ── 컴퓨터공학과 트랙 ─────────────────────────────────────────────────
   "sw-eng": {
     title: "소프트웨어 공학 트랙 상세 탐색",
     breadcrumbField: "SOFTWARE ENGINEERING TRACK",
@@ -84,6 +128,8 @@ export const TRACK_META: Record<string, TrackMeta> = {
       { label: "클라우드 보안", percent: 78 },
     ],
   },
+
+  // ── 인공지능학과 트랙 ─────────────────────────────────────────────────
   "ml": {
     title: "머신러닝 트랙 상세 탐색",
     breadcrumbField: "MACHINE LEARNING TRACK",
@@ -119,10 +165,16 @@ export const TRACK_META: Record<string, TrackMeta> = {
   },
 };
 
+/**
+ * DEFAULT_META
+ *
+ * TRACK_META에 해당 fieldId가 없을 때 사용하는 폴백 메타데이터.
+ * 비어있는 coreSkills와 dataInsights로 좌측 패널이 빈 상태로 렌더링됨.
+ */
 export const DEFAULT_META: TrackMeta = {
   title: "트랙 상세 탐색",
   breadcrumbField: "TRACK",
   jobDefinition: "이 분야의 전문가로 성장하기 위한 커리큘럼을 탐색하세요.",
-  coreSkills: [],
-  dataInsights: [],
+  coreSkills: [],    // 빈 배열 → 스킬 배지 섹션이 빈 상태로 표시
+  dataInsights: [],  // 빈 배열 → 데이터 인사이트 섹션이 빈 상태로 표시
 };

@@ -8,14 +8,24 @@ interface GraduationStatusCardProps {
   completedByType: Record<CategoryType, number>;
   plannedByType: Record<CategoryType, number>;
   reqByType: Record<CategoryType, number>;
+  // containerRef: 스크롤 시 sticky div의 bottom 위치를 page.tsx에서 추적하기 위한 ref
+  containerRef?: React.RefObject<HTMLDivElement>;
 }
 
 export function GraduationStatusCard({
   remaining, totalCompleted, totalRequired,
   completedByType, plannedByType, reqByType,
+  containerRef,
 }: GraduationStatusCardProps) {
   return (
-    <div style={{ position: "sticky", top: "64px", zIndex: 10, backgroundColor: "#F6F6F6", padding: "24px 24px 16px" }}>
+    <div ref={containerRef} style={{ position: "sticky", top: "64px", zIndex: 10, backgroundColor: "#F6F6F6", padding: "24px 24px 20px" }}>
+      {/* 하단 그라디언트: 과목 카드가 히어로 밑으로 스크롤될 때 border-radius가 부드럽게 사라지도록 */}
+      <div style={{
+        position: "absolute", bottom: 0, left: 0, right: 0,
+        height: "48px",
+        background: "linear-gradient(to bottom, transparent, #F6F6F6)",
+        pointerEvents: "none", zIndex: 1,
+      }} />
       <div style={{ width: LAYOUT.heroCardWidth, margin: "0 auto" }}>
         <div style={{ backgroundColor: "#FFFFFF", borderRadius: "20px", padding: "36px 40px 42px", boxShadow: "0 2px 16px rgba(0,0,0,0.08)" }}>
 

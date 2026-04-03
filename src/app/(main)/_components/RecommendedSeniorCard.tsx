@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import type { Senior } from "@/types";
 import { getAvatarVariantForId, AvatarIcon, AVATAR_VARIANTS } from "@/lib/avatarVariants";
@@ -163,6 +164,8 @@ type RecommendedSeniorCardProps = {
   onDragStart: (clientX: number) => void;
   onDragEnd: (clientX: number) => void;
   isZeroState?: boolean;
+  // wheel 이벤트 리스너 등록용 ref — wrapper div 없이 직접 연결
+  containerRef?: React.RefObject<HTMLDivElement>;
 };
 
 function ZeroStateSection() {
@@ -206,14 +209,38 @@ function ProfileCardSection({
   avatarFill,
   avatarBodyPath,
 }: ProfileCardSectionProps) {
+  // 스와이프 시작 X 좌표 — 끝점과 비교해 스와이프 여부 판정
+  const swipeStartX = useRef<number | null>(null);
+  // 스와이프로 판정된 경우 click 이벤트 차단용 플래그
+  const wasSwipe = useRef(false);
+  const SWIPE_THRESHOLD = 30; // 30px 이상 이동 시 스와이프로 판정
+
+  function handleStart(clientX: number) {
+    swipeStartX.current = clientX;
+    wasSwipe.current = false;
+    onDragStart(clientX);
+  }
+
+  function handleEnd(clientX: number) {
+    if (swipeStartX.current !== null) {
+      if (Math.abs(clientX - swipeStartX.current) >= SWIPE_THRESHOLD) wasSwipe.current = true;
+      swipeStartX.current = null;
+    }
+    onDragEnd(clientX);
+  }
+
   return (
     <div
       style={slideAreaStyle(sliding, slideDir)}
-      onMouseDown={(e) => onDragStart(e.clientX)}
-      onMouseUp={(e) => onDragEnd(e.clientX)}
-      onMouseLeave={() => { dragStartX.current = null; }}
-      onTouchStart={(e) => onDragStart(e.touches[0].clientX)}
-      onTouchEnd={(e) => onDragEnd(e.changedTouches[0].clientX)}
+      onClickCapture={(e) => {
+        // 스와이프였으면 클릭 이벤트 차단 (Link 버튼 오작동 방지)
+        if (wasSwipe.current) { e.stopPropagation(); wasSwipe.current = false; }
+      }}
+      onMouseDown={(e) => handleStart(e.clientX)}
+      onMouseUp={(e) => handleEnd(e.clientX)}
+      onMouseLeave={() => { swipeStartX.current = null; dragStartX.current = null; }}
+      onTouchStart={(e) => handleStart(e.touches[0].clientX)}
+      onTouchEnd={(e) => handleEnd(e.changedTouches[0].clientX)}
     >
       <div className="flex flex-col items-start w-full" style={profileCardStyle}>
         <div className="flex items-center gap-3">
@@ -303,6 +330,7 @@ export default function RecommendedSeniorCard({
   onDragStart,
   onDragEnd,
   isZeroState,
+  containerRef,
 }: RecommendedSeniorCardProps) {
   const senior = seniors[seniorIndex];
   const avatarVariant = senior ? getAvatarVariantForId(senior.id) : AVATAR_VARIANTS[3];
@@ -313,7 +341,7 @@ export default function RecommendedSeniorCard({
     .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())[0] ?? null;
 
   return (
-    <div className="flex-1 flex flex-col" style={cardStyle(isZeroState)}>
+    <div ref={containerRef} className="flex-1 flex flex-col" style={cardStyle(isZeroState)}>
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 font-semibold">

@@ -12,5 +12,5 @@ export const LAYOUT = {
   courseBoxWidth: "700px",
   simulatorWidth: "300px",
   heroCardWidth: "1016px", // courseBoxWidth + gap(16) + simulatorWidth
-  simulatorStickyTop: "390px",
+  simulatorStickyTop: "400px",
 } as const;

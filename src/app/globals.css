@@ -2,6 +2,20 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: "AvantGarde LT Bold";
+  src: url("/AvantGardeLT-Bold.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "AvantGarde Bk BT";
+  src: url("/avantgarde-bk-bt-2/AVGARDN_2.TTF") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* ============================================
@@ -130,6 +144,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* 페이지 전환 애니메이션 */
+@keyframes page-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-transition {
+  animation: page-fade-in 0.3s ease forwards;
 }
 
 /* 회원가입/로그인 폼 placeholder 색상 */
