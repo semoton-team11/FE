@@ -54,7 +54,7 @@ function SeniorsPageInner() {
     if (departments.length === 0) return;
     if (!deptName) { setSeniors([]); return; }
     const dept = departments.find((d) => d.name === deptName);
-    getSeniors({ departmentId: dept?.id }).then(setSeniors);
+    getSeniors({ departmentId: deptName }).then(setSeniors);
   }, [deptName, departments]);
 
   return (

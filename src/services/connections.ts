@@ -27,7 +27,8 @@
 
 import type { ConnectionRequest, Message } from "@/types";
 import { MOCK_CONNECTIONS, MOCK_MESSAGES } from "@/mock";
-// import { supabase } from "@/lib/supabase";
+//import { supabase } from "@/lib/supabase";
+
 
 // 세션 중 새로 생성된 연결을 임시 저장
 const sessionConnections: ConnectionRequest[] = [];

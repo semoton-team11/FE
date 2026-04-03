@@ -24,51 +24,83 @@
 // ╚══════════════════════════════════════════════════════════════╝
 
 import type { Senior } from "@/types";
+import { apiRequest } from "@/lib/api";
 import { MOCK_SENIORS } from "@/mock";
-// import { supabase } from "@/lib/supabase";
 
-// ──────────────────────────────────────────────────────────────
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+
+// 공통 헤더 (토큰 포함)
+const getHeaders = () => {
+  const token = localStorage.getItem("access_token");
+  return {
+    "Authorization": `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
+};
+
+
 // getSeniors  — 선배 목록 조회 (필터 옵션)
 // DB 테이블 : seniors
-// ★ mock: departmentId 필터 없으면 빈 배열 반환 (의도된 동작)
-// ──────────────────────────────────────────────────────────────
+// GET /seniors?department={dept_name}
 export async function getSeniors(filters?: {
   departmentId?: string;
-  fieldId?: string;
 }): Promise<Senior[]> {
+  const params = new URLSearchParams();
+  if (filters?.departmentId) {
+    params.set("department", filters.departmentId);
+  }
 
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // let query = supabase.from("seniors").select("*");
-  // if (filters?.departmentId) query = query.eq("department_id", filters.departmentId);
-  // if (filters?.fieldId)      query = query.eq("field_id", filters.fieldId);
-  // const { data, error } = await query;
-  // if (error) throw error;
-  // return data ?? [];
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const res = await fetch(`${API_URL}/seniors?${params.toString()}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
 
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  if (!filters?.departmentId) return [];
-  return MOCK_SENIORS.filter((s) => s.departmentId === filters.departmentId);
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const result = await res.json();
+  if (!res.ok) throw new Error(result.message ?? "선배 목록 조회 실패");
+
+  return result.data.map((s: any) => ({
+    id: s.id,
+    name: s.name,
+    departmentId: s.department,
+    department: s.department,
+    graduationYear: s.graduated_year,
+    company: s.company ?? "",
+    jobTitle: s.job_title ?? "",
+    skills: s.skills ?? [],
+    profileImage: s.profile_image ?? null,
+    bio: s.bio ?? "",
+    tips: s.tips ?? "",
+    timetable: [],
+    isAvailable: s.is_available ?? false,
+  }));
 }
 
-// ──────────────────────────────────────────────────────────────
-// getSeniorById  — 선배 단건 조회
-// DB 테이블 : seniors WHERE id = ?
-// ──────────────────────────────────────────────────────────────
+
+// GET /seniors/{senior_id}
 export async function getSeniorById(id: string): Promise<Senior | null> {
+  const res = await fetch(`${API_URL}/seniors/${id}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
 
-  // ━━━ SUPABASE (연동 시 이 블록 주석 해제, MOCK 블록 삭제) ━━━
-  // const { data, error } = await supabase
-  //   .from("seniors")
-  //   .select("*")
-  //   .eq("id", id)
-  //   .single();
-  // if (error) throw error;
-  // return data;
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  if (!res.ok) return null;
 
-  // ━━━ MOCK (현재 사용 중) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  return MOCK_SENIORS.find((s) => s.id === id) ?? null;
-  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  const result = await res.json();
+
+  const s = result.data;
+  return {
+    id: s.id,
+    name: s.name,
+    departmentId: s.department,
+    department: s.department,
+    graduationYear: s.graduated_year,
+    company: s.company ?? "",
+    jobTitle: s.job_title ?? "",
+    skills: s.skills ?? [],
+    profileImage: s.profile_image ?? null,
+    bio: s.bio ?? "",
+    tips: s.tips ?? "",
+    timetable: [],
+    isAvailable: s.is_available ?? false,
+  };
 }
