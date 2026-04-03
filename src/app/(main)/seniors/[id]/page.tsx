@@ -30,8 +30,8 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 // 선배 단건 조회 API
 import { getSeniorById } from "@/services/seniors";
-// 연결 요청 전송 API (커피챗/멘토링 요청)
-import { sendConnectionRequest } from "@/services/connections";
+// 연결 요청 전송 / 기존 연결 조회 API
+import { sendConnectionRequest, getConnections } from "@/services/connections";
 // 현재 로그인한 사용자 정보 조회
 import { getCurrentUser } from "@/services/user";
 // 타입 정의
@@ -97,12 +97,19 @@ export default function SeniorDetailPage() {
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   // currentUserId: 로그인한 사용자 ID — 연결 요청의 fromUserId로 사용
   const [currentUserId, setCurrentUserId] = useState("");
+  // existingConnId: 이미 연결된 경우 해당 연결 ID — 있으면 새 요청 대신 메시지함으로 바로 이동
+  const [existingConnId, setExistingConnId] = useState<string | null>(null);
 
   // ── 선배 데이터 로드 ──
   // id가 변경될 때마다(페이지 재방문 등) 재실행
   useEffect(() => {
-    // 현재 사용자 ID를 미리 가져옴 (연결 요청 시 필요)
-    getCurrentUser().then((u) => setCurrentUserId(u.id)).catch(() => {});
+    // 현재 사용자 ID 로드 + 이 선배와 기존 연결 여부 확인
+    getCurrentUser().then(async (u) => {
+      setCurrentUserId(u.id);
+      const conns = await getConnections(u.id).catch(() => []);
+      const existing = conns.find((c) => c.toSeniorId === id);
+      if (existing) setExistingConnId(existing.id);
+    }).catch(() => {});
     // 선배 상세 데이터 로드
     getSeniorById(id).then((s) => {
       setSenior(s);
@@ -127,19 +134,23 @@ export default function SeniorDetailPage() {
    */
   async function handleConnect() {
     if (!senior) return;
-    setIsSending(true); // 버튼 비활성화 시작
+    // 이미 연결된 선배면 새 요청 없이 바로 메시지함으로 이동
+    if (existingConnId) {
+      router.push(`/messages?connId=${existingConnId}`);
+      return;
+    }
+    setIsSending(true);
     try {
       const newConn = await sendConnectionRequest({
         fromUserId: currentUserId,
         toSeniorId: senior.id,
-        type: "커피챗",                       // 연결 유형 — 현재는 커피챗 고정
-        message: "안녕하세요, 연결 요청드립니다!", // 기본 메시지
-        meetingLink: undefined,               // 미팅 링크는 선택 사항
+        type: "커피챗",
+        message: "안녕하세요, 연결 요청드립니다!",
+        meetingLink: undefined,
       });
-      // 연결 생성 성공 시 해당 채팅방으로 바로 이동
       router.push(`/messages?connId=${newConn.id}`);
     } finally {
-      setIsSending(false); // 성공/실패 관계없이 로딩 상태 해제
+      setIsSending(false);
     }
   }
 
@@ -165,6 +176,7 @@ export default function SeniorDetailPage() {
         senior={senior}
         isSending={isSending}
         onConnect={handleConnect}
+        isConnected={!!existingConnId}
       />
 
       {/* ── 우측: 학업 여정 그리드 + 멘토링 가능 시간 ── */}

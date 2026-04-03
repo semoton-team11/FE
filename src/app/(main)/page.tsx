@@ -28,6 +28,7 @@ import { getCurrentUser } from "@/services/user";
 import { MOCK_USER } from "@/mock";
 import { getPlannedCourses, getCatalogCourses, getCheckedCourses, getCurriculumRequirement, getCurriculumStatus } from "@/services/curriculum";
 import { getSeniors } from "@/services/seniors";
+import { getNearestEvent } from "@/lib/sharedEvents";
 import type { User, CurriculumStatus, Senior, CatalogCourse } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import AcademicStatusCard from "./_components/AcademicStatusCard";
@@ -290,6 +291,7 @@ export default function HomePage() {
           onDragEnd={handleDragEnd}
           isZeroState={isSeniorZeroState}
           containerRef={seniorCardRef}
+          upcomingSession={getNearestEvent()}
         />
       </section>
 

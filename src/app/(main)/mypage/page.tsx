@@ -91,12 +91,15 @@ export default function MyPage() {
       const [f, depts, seniors] = await Promise.all([
         getFields(),        // 전체 관심 분야 목록
         getDepartments(),   // 전체 학과 목록
-        // 스크랩한 선배 ID 배열을 각각 상세 조회하여 배열로 합침
-        Promise.all(u.scrapedSeniorIds.map((id) => getSeniorById(id))),
+        // 스크랩한 선배 ID: 백엔드 + localStorage 즐겨찾기 병합 (중복 제거)
+        (() => {
+          const localIds: string[] = (() => { try { return JSON.parse(localStorage.getItem("starred_senior_ids") ?? "[]"); } catch { return []; } })();
+          const merged = [...new Set([...u.scrapedSeniorIds, ...localIds])];
+          return Promise.all(merged.map((id) => getSeniorById(id)));
+        })(),
       ]);
       setFields(f);
       setDepartments(depts);
-      // getSeniorById가 null을 반환할 수 있으므로 null 필터링
       setScrapedSeniors(seniors.filter((s): s is Senior => s !== null));
     });
   }, []);

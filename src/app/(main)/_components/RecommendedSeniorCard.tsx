@@ -166,6 +166,8 @@ type RecommendedSeniorCardProps = {
   isZeroState?: boolean;
   // wheel 이벤트 리스너 등록용 ref — wrapper div 없이 직접 연결
   containerRef?: React.RefObject<HTMLDivElement | null>;
+  // 캘린더에서 가져온 가장 가까운 예정 세션 (없으면 senior.scheduledSession 폴백)
+  upcomingSession?: { title: string; description?: string } | null;
 };
 
 function ZeroStateSection() {
@@ -331,14 +333,17 @@ export default function RecommendedSeniorCard({
   onDragEnd,
   isZeroState,
   containerRef,
+  upcomingSession,
 }: RecommendedSeniorCardProps) {
   const senior = seniors[seniorIndex];
   const avatarVariant = senior ? getAvatarVariantForId(senior.id) : AVATAR_VARIANTS[3];
 
-  const nearestSession = seniors
+  // upcomingSession(캘린더 공유 소스) 우선, 없으면 senior.scheduledSession 폴백
+  const fallbackSession = seniors
     .filter((s) => s.scheduledSession)
     .map((s) => s.scheduledSession!)
     .sort((a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime())[0] ?? null;
+  const nearestSession = upcomingSession ?? fallbackSession;
 
   return (
     <div ref={containerRef} className="flex-1 flex flex-col" style={cardStyle(isZeroState)}>

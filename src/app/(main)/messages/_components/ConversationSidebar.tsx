@@ -29,27 +29,27 @@ import { getAvatarVariantForId, AvatarIcon } from "@/lib/avatarVariants";
 import { CURRENT_USER_ID } from "../_lib/constants";
 
 // ── 인라인 스타일 상수 ──────────────────────────────────────────────────────
-// 사이드바 전체 컨테이너: 고정 너비 270px, 우측 구분선
+// 사이드바 전체 컨테이너: 고정 너비 280px, 우측 구분선
 const asideStyle: React.CSSProperties = {
-  width: "270px",
-  flexShrink: 0,           // 부모 flex 컨테이너에서 너비가 줄어들지 않도록
+  width: "280px",
+  flexShrink: 0,
   backgroundColor: "#FFFFFF",
   display: "flex",
   flexDirection: "column",
-  borderRight: "1px solid #EFEFEF",
+  borderRight: "1px solid #F0EDED",
 };
 
 // 헤더 영역 패딩 (제목 + 검색창 포함 영역)
 const headerStyle: React.CSSProperties = {
-  padding: "24px 20px 16px",
+  padding: "28px 20px 14px",
 };
 
 // "메시지" 제목 텍스트 스타일
 const headingStyle: React.CSSProperties = {
-  fontSize: "22px",
-  fontWeight: 700,
+  fontSize: "20px",
+  fontWeight: 500,
   color: "#1F1A1A",
-  marginBottom: "16px",
+  marginBottom: "14px",
 };
 
 // 검색창 래퍼: 아이콘 + 인풋을 가로 배치
@@ -57,10 +57,10 @@ const searchWrapStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
   gap: "8px",
-  border: "1px solid #EBE0E0",
-  borderRadius: "12px",
-  padding: "9px 14px",
-  backgroundColor: "#FCF1F1",  // 연한 분홍빛 배경
+  border: "1.5px solid #EBE0E0",
+  borderRadius: "10px",
+  padding: "10px 14px",
+  backgroundColor: "#FCF1F1",
 };
 
 // 검색 인풋 필드: 배경/테두리 초기화, 전체 너비
@@ -95,15 +95,15 @@ const emptyTextStyle: React.CSSProperties = {
 const connBtnStyle = (isSelected: boolean): React.CSSProperties => ({
   width: "100%",
   textAlign: "left",
-  padding: "14px 20px",
+  padding: "12px 16px",
   display: "flex",
   alignItems: "center",
   gap: "12px",
-  // 선택 시: 연한 분홍빛 배경 / 미선택 시: 투명 배경
-  backgroundColor: isSelected ? "#FFF8F7" : "transparent",
+  backgroundColor: isSelected ? "#F6EBEB" : "transparent",
   border: "none",
-  borderBottom: "1px solid #F1F5F9",
+  borderRadius: isSelected ? "12px" : "0",
   cursor: "pointer",
+  transition: "background-color 150ms ease",
 });
 
 /**
@@ -113,9 +113,9 @@ const connBtnStyle = (isSelected: boolean): React.CSSProperties => ({
  * @param bg - 아바타 배경색 (avatarVariant.bg 또는 이미지 오버레이용 반투명 검정)
  */
 const avatarWrapStyle = (bg: string): React.CSSProperties => ({
-  width: "48px",
-  height: "48px",
-  borderRadius: "50%",
+  width: "46px",
+  height: "46px",
+  borderRadius: "14px",
   backgroundColor: bg,
   flexShrink: 0,
   display: "flex",
@@ -235,7 +235,8 @@ export default function ConversationSidebar({
           // 검색 결과 없거나 연결된 선배 없을 때 안내 문구
           <p style={emptyTextStyle}>대화가 없습니다.</p>
         ) : (
-          filteredConns.map((conn) => {
+          <div style={{ padding: "4px 8px", display: "flex", flexDirection: "column", gap: "2px" }}>
+          {filteredConns.map((conn) => {
             // O(1) 룩업으로 연결 요청의 선배 정보 조회
             const senior = seniorMap[conn.toSeniorId];
             // 현재 선택된 대화인지 확인 (강조 스타일 적용 여부 결정)
@@ -300,7 +301,8 @@ export default function ConversationSidebar({
                 </div>
               </button>
             );
-          })
+          })}
+          </div>
         )}
       </div>
     </aside>

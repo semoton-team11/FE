@@ -48,7 +48,13 @@
       "Bash(head -40 git diff HEAD...origin/dev -- \"src/app/\\(main\\)/mypage/page.tsx\")",
       "Bash(sed -i '' 's/user\\\\.departmentId/user.department/g' \"src/app/\\(main\\)/mypage/page.tsx\")",
       "Bash(sed -i '' 's/departmentId: dept?.id/departmentId: deptName/g' \"src/app/\\(main\\)/seniors/page.tsx\")",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(sed -i '' 's/const bottomRef = useRef<HTMLDivElement>\\(null\\);/const scrollContainerRef = useRef<HTMLDivElement>\\(null\\);/' \"src/app/\\(main\\)/messages/page.tsx\")",
+      "Bash(sed -i '' 's/bottomRef\\\\.current?\\\\.scrollIntoView\\({ behavior: \"\"smooth\"\" }\\);/const el = scrollContainerRef.current; if \\(el\\) el.scrollTop = el.scrollHeight;/' \"src/app/\\(main\\)/messages/page.tsx\")",
+      "Bash(sed -i '' 's/bottomRef={bottomRef}/scrollContainerRef={scrollContainerRef}/' \"src/app/\\(main\\)/messages/page.tsx\")",
+      "Bash(sed -i '' 's/스크롤 최하단 이동용 ref → MessageArea의 bottomRef div에 연결/스크롤 컨테이너 ref — scrollTop으로 최하단 이동 \\(scrollIntoView 대신 사용\\)/' \"src/app/\\(main\\)/messages/page.tsx\")",
+      "Bash(sed -i '' 's/새 메시지 추가\\(n→n+1\\)일 때만 bottomRef로 스크롤/새 메시지 추가\\(n→n+1\\)일 때만 스크롤 컨테이너 최하단으로 이동/' \"src/app/\\(main\\)/messages/page.tsx\")",
+      "Bash(find /Users/tom/Desktop/projects/semotone-fe -name .env* -o -name *.example)"
     ]
   }
 }

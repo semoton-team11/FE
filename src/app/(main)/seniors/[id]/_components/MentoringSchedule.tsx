@@ -178,20 +178,24 @@ function getDayButtonStyle(
  */
 export default function MentoringSchedule({ selectedDate, onSelectDate }: MentoringScheduleProps) {
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0);
 
-  // 이번 주 7일의 Date 배열 (일요일 ~ 토요일)
-  const weekDates = getWeekDates();
-  // 오늘 날짜 숫자 (일) — 오늘 하이라이트 표시용
+  const weekDates = getWeekDates(weekOffset);
   const today = new Date().getDate();
-  // 오늘 자정 Date — 과거 날짜 판별 기준
   const todayStart = new Date();
-  todayStart.setHours(0, 0, 0, 0); // 시간 부분을 0으로 초기화
+  todayStart.setHours(0, 0, 0, 0);
+
+  // 주간 범위 레이블 (예: "4월 7일 - 4월 13일")
+  const first = weekDates[0];
+  const last = weekDates[6];
+  const weekLabel = first.getMonth() === last.getMonth()
+    ? `${first.getMonth() + 1}월 ${first.getDate()}일 - ${last.getDate()}일`
+    : `${first.getMonth() + 1}월 ${first.getDate()}일 - ${last.getMonth() + 1}월 ${last.getDate()}일`;
 
   return (
     <section>
       {/* 섹션 헤더: 달력 아이콘 + 제목 */}
       <div style={sectionHeaderStyle}>
-        {/* 달력 SVG 아이콘 */}
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1F1A1A" strokeWidth="2">
           <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
           <line x1="16" y1="2" x2="16" y2="6" />
@@ -202,22 +206,39 @@ export default function MentoringSchedule({ selectedDate, onSelectDate }: Mentor
       </div>
 
       <div style={cardStyle}>
+        {/* ── 주간 네비게이션 ── */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+          <button
+            onClick={() => setWeekOffset((o) => o - 1)}
+            disabled={weekOffset <= 0}
+            style={{ background: "none", border: "none", cursor: weekOffset <= 0 ? "default" : "pointer", padding: "4px", opacity: weekOffset <= 0 ? 0.3 : 1 }}
+          >
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+              <path d="M7 1L1 7L7 13" stroke="#5C3F3F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+          <span style={{ fontSize: "13px", fontWeight: 500, color: "#1F1A1A" }}>{weekLabel}</span>
+          <button
+            onClick={() => setWeekOffset((o) => o + 1)}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: "4px" }}
+          >
+            <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+              <path d="M1 1L7 7L1 13" stroke="#5C3F3F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        </div>
+
         {/* ── 주간 달력 그리드 ── */}
         <div style={calendarGridStyle}>
-          {/* DAY_LABELS 배열을 순회하여 각 요일 컬럼 렌더 */}
           {DAY_LABELS.map((label, i) => (
             <div key={label} style={dayLabelCellStyle}>
-              {/* 요일 레이블 텍스트 */}
               <p style={dayLabelTextStyle}>{label}</p>
-              {/* 날짜 버튼 — 과거 날짜는 클릭 이벤트 무시 */}
               <button
                 onClick={() =>
-                  // 과거 날짜면 undefined (클릭 무시), 미래면 날짜 전달
                   !weekDates[i] || weekDates[i] < todayStart
                     ? undefined
                     : onSelectDate(weekDates[i].getDate())
                 }
-                // 날짜/상태에 따른 동적 스타일 계산
                 style={getDayButtonStyle(weekDates[i], today, todayStart, selectedDate, i)}
               >
                 {weekDates[i].getDate()}

@@ -27,7 +27,7 @@ type MessageAreaProps = {
   messages: Message[];                         // messages/page.tsx의 messages state
   selectedConn: ConnectionRequest;             // 현재 선택된 연결 (toSeniorId로 선배 조회)
   selectedSenior: Senior | null;               // seniorMap[selectedConn.toSeniorId]로 조회한 선배 정보
-  bottomRef: React.RefObject<HTMLDivElement | null>; // 스크롤 최하단 이동용 (messages/page.tsx에서 생성)
+  scrollContainerRef: React.RefObject<HTMLDivElement | null>; // 스크롤 컨테이너 ref — page.tsx에서 scrollTop 직접 조작
   isLoading?: boolean;                         // 메시지 로딩 중 여부 → true이면 스켈레톤 표시
 };
 
@@ -114,7 +114,7 @@ function getBubbleStyle(isMine: boolean): React.CSSProperties {
     padding: "10px 16px",
     borderRadius: isMine ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
     fontSize: "14px",
-    backgroundColor: isMine ? "#9A001F" : "#FFFFFF",
+    backgroundColor: isMine ? "#9A001F" : "#E6BDBB4D",
     color: isMine ? "#FFFFFF" : "#1F1A1A",
     boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
   };
@@ -252,21 +252,18 @@ function MessageSkeleton() {
  * bottomRef: messages/page.tsx에서 생성한 ref
  *   → 새 메시지 추가 시 scrollIntoView로 최하단 이동
  */
-export default function MessageArea({ messages, selectedConn, selectedSenior, bottomRef, isLoading }: MessageAreaProps) {
+export default function MessageArea({ messages, selectedConn, selectedSenior, scrollContainerRef, isLoading }: MessageAreaProps) {
   const hasMessages = messages.length > 0;
 
   return (
-    <div style={scrollAreaStyle}>
+    <div ref={scrollContainerRef} style={scrollAreaStyle}>
       {isLoading ? (
         <MessageSkeleton />
       ) : !hasMessages ? (
-        // selectedConn.toSeniorId → EmptyProfile의 아바타·프로필 링크에 사용
         <EmptyProfile selectedSenior={selectedSenior} seniorId={selectedConn.toSeniorId} />
       ) : (
         <MessageList messages={messages} />
       )}
-      {/* 스크롤 최하단 앵커 (messages/page.tsx의 useEffect에서 scrollIntoView 호출) */}
-      <div ref={bottomRef} />
     </div>
   );
 }

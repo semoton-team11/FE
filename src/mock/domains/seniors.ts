@@ -133,6 +133,22 @@ export const MOCK_SENIORS: Senior[] = [
       { semester: "1-2", courses: [{ id: "c-7", name: "평면디자인",        credits: 3, type: "전공기초", semester: "1-2", grade: "A0" }] },
       { semester: "2-1", courses: [{ id: "c-8", name: "디자인 프로토타입", credits: 3, type: "전공필수", semester: "2-1", grade: "A+" }] },
       { semester: "2-2", courses: [{ id: "c-9", name: "조형디자인 1",      credits: 3, type: "전공필수", semester: "2-2", grade: "A0" }] },
+      { semester: "3-1", courses: [
+        { id: "c-9-1", name: "제품 디자인 1",   credits: 3, type: "전공선택", semester: "3-1", grade: "A+" },
+        { id: "c-9-2", name: "인터페이스 설계", credits: 3, type: "전공선택", semester: "3-1", grade: "A0" },
+      ]},
+      { semester: "3-2", courses: [
+        { id: "c-9-3", name: "제품 디자인 2",   credits: 3, type: "전공선택", semester: "3-2", grade: "A0" },
+        { id: "c-9-4", name: "디자인 리서치",   credits: 3, type: "전공선택", semester: "3-2", grade: "A+" },
+      ]},
+      { semester: "4-1", courses: [
+        { id: "c-9-5", name: "캡스톤 디자인 1", credits: 3, type: "전공필수", semester: "4-1", grade: "A+" },
+        { id: "c-9-6", name: "사용자 중심 설계", credits: 3, type: "전공선택", semester: "4-1", grade: "A0" },
+      ]},
+      { semester: "4-2", courses: [
+        { id: "c-9-7", name: "캡스톤 디자인 2", credits: 3, type: "전공필수", semester: "4-2", grade: "A+" },
+        { id: "c-9-8", name: "졸업 포트폴리오", credits: 3, type: "전공필수", semester: "4-2", grade: "A+" },
+      ]},
     ],
     isAvailable: false, // 현재 멘토링 불가 (오프라인 상태)
   },
@@ -153,6 +169,22 @@ export const MOCK_SENIORS: Senior[] = [
       { semester: "1-2", courses: [{ id: "c-11", name: "현대미술사",    credits: 3, type: "전공기초", semester: "1-2", grade: "A+" }] },
       { semester: "2-1", courses: [{ id: "c-12", name: "UX 디자인",     credits: 3, type: "전공필수", semester: "2-1", grade: "A+" }] },
       { semester: "2-2", courses: [{ id: "c-13", name: "디자인 비즈니스", credits: 3, type: "전공필수", semester: "2-2", grade: "A0" }] },
+      { semester: "3-1", courses: [
+        { id: "c-13-1", name: "브랜드 아이덴티티", credits: 3, type: "전공선택", semester: "3-1", grade: "A+" },
+        { id: "c-13-2", name: "타이포그래피",      credits: 3, type: "전공선택", semester: "3-1", grade: "A0" },
+      ]},
+      { semester: "3-2", courses: [
+        { id: "c-13-3", name: "광고 디자인",       credits: 3, type: "전공선택", semester: "3-2", grade: "A+" },
+        { id: "c-13-4", name: "패키지 디자인",     credits: 3, type: "전공선택", semester: "3-2", grade: "A0" },
+      ]},
+      { semester: "4-1", courses: [
+        { id: "c-13-5", name: "브랜드 전략",       credits: 3, type: "전공필수", semester: "4-1", grade: "A0" },
+        { id: "c-13-6", name: "디자인 경영",       credits: 3, type: "전공선택", semester: "4-1", grade: "A+" },
+      ]},
+      { semester: "4-2", courses: [
+        { id: "c-13-7", name: "졸업 작품 1",       credits: 3, type: "전공필수", semester: "4-2", grade: "A+" },
+        { id: "c-13-8", name: "졸업 작품 2",       credits: 3, type: "전공필수", semester: "4-2", grade: "A+" },
+      ]},
     ],
     isAvailable: true, // 현재 멘토링 가능
   },

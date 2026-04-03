@@ -15,17 +15,31 @@
 
 "use client";
 
+import { useState } from "react";
 // Senior 타입 — 컴포넌트가 받는 데이터 구조 명세
 import type { Senior } from "@/types";
 
+const STARRED_KEY = "starred_senior_ids";
+
+function getStarredIds(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(STARRED_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function setStarredIds(ids: string[]) {
+  localStorage.setItem(STARRED_KEY, JSON.stringify(ids));
+}
+
 /** 컴포넌트 Props 타입 */
 type ProfileCardProps = {
-  /** 표시할 선배 데이터 */
   senior: Senior;
-  /** 연결 요청 API 호출 중 여부 — true일 때 버튼을 "연결 중..." 상태로 표시 */
   isSending: boolean;
-  /** "선배와 연결하기" 버튼 클릭 시 부모에게 위임하는 콜백 */
   onConnect: () => void;
+  /** 이미 연결된 경우 true — 버튼 텍스트를 "메시지 보내기"로 변경 */
+  isConnected?: boolean;
 };
 
 /**
@@ -38,9 +52,18 @@ type ProfileCardProps = {
  * @param isSending - 연결 요청 진행 중 여부 (버튼 비활성화 제어)
  * @param onConnect - 연결 버튼 클릭 핸들러 (부모가 실제 API 호출 담당)
  */
-export default function ProfileCard({ senior, isSending, onConnect }: ProfileCardProps) {
-  // profileImage가 없으면 기본 SVG 이미지로 대체
+export default function ProfileCard({ senior, isSending, onConnect, isConnected }: ProfileCardProps) {
   const imageSrc = senior.profileImage ?? "/profile-default-blue.svg";
+  const [isStarred, setIsStarred] = useState(() => getStarredIds().includes(senior.id));
+
+  function toggleStar() {
+    const ids = getStarredIds();
+    const next = ids.includes(senior.id)
+      ? ids.filter((id) => id !== senior.id)
+      : [...ids, senior.id];
+    setStarredIds(next);
+    setIsStarred(!ids.includes(senior.id));
+  }
 
   return (
     // 카드 전체 컨테이너 — 너비 368px 고정, 세로 방향 flex
@@ -60,9 +83,12 @@ export default function ProfileCard({ senior, isSending, onConnect }: ProfileCar
       {/* ── 이름 + 즐겨찾기 버튼 행 ── */}
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <h1 style={{ fontSize: "26px", fontWeight: 700, color: "#1F1A1A" }}>{senior.name}</h1>
-        {/* 별표 아이콘 버튼 — 즐겨찾기/스크랩 기능 (현재는 UI만 구현) */}
-        <button style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "#9A001F", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="1.5">
+        {/* 별표 아이콘 버튼 — 즐겨찾기 토글 */}
+        <button
+          onClick={toggleStar}
+          style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: isStarred ? "#9A001F" : "#F5D0D0", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "background-color 150ms ease" }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill={isStarred ? "white" : "none"} stroke={isStarred ? "white" : "#9A001F"} strokeWidth="1.5">
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
           </svg>
         </button>
@@ -109,7 +135,7 @@ export default function ProfileCard({ senior, isSending, onConnect }: ProfileCar
         }}
       >
         {/* isSending 중이면 피드백 텍스트, 아니면 기본 문구 */}
-        {isSending ? "연결 중..." : "선배와 연결하기"}
+        {isSending ? "연결 중..." : isConnected ? "메시지 보내기" : "선배와 연결하기"}
       </button>
 
     </div>

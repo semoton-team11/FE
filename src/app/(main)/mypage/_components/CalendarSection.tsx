@@ -25,15 +25,8 @@ import { useState } from "react";
 import Link from "next/link";
 import type { CSSProperties } from "react";
 
-// ── 목 데이터 ─────────────────────────────────────────────────────────────
-// 추후 API 연동 시 아래 배열을 서버 데이터로 대체 예정
-
-/** 하드코딩된 이벤트 목록 — date는 "YYYY-MM-DD" 형식 */
-const MOCK_EVENTS = [
-  { date: "2026-04-05", time: "오전 10:00", title: "대균 선배와 함께 하는 포폴 리뷰, 1층 예디대 건물" },
-  { date: "2026-04-15", time: "오후 2:00",  title: "김성백 선배 커피챗" },
-  { date: "2026-04-20", time: "오전 11:00", title: "포트폴리오 피드백 미팅" },
-];
+// 공유 이벤트 소스 — 홈화면 세션 카드와 동일한 데이터 사용
+import { MOCK_EVENTS } from "@/lib/sharedEvents";
 
 /** 달력 헤더의 요일 레이블 (일요일 시작) */
 const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
@@ -302,8 +295,8 @@ export default function CalendarSection() {
           </p>
           {/* 이벤트 시작 시간 */}
           <p style={eventTimeStyle}>{nextEvent.time}</p>
-          {/* 이벤트 제목/내용 */}
-          <p style={eventTitleStyle}>{nextEvent.title}</p>
+          {/* 이벤트 설명 (description 우선, 없으면 title) */}
+          <p style={eventTitleStyle}>{nextEvent.description ?? nextEvent.title}</p>
         </div>
       )}
     </div>
